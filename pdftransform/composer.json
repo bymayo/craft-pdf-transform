@@ -1,0 +1,44 @@
+{
+    "name": "bymayo/pdf-transform",
+    "description": "Transform PDF's in to Image",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "pdf transform"
+    ],
+    "support": {
+        "docs": "https://github.com/bymayo/pdf-transform/blob/master/README.md",
+        "issues": "https://github.com/bymayo/pdf-transform/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ByMayo",
+            "homepage": "http://bymayo.co.uk"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0-RC1",
+        "spatie/pdf-to-image": "^1.8"
+    },
+    "autoload": {
+        "psr-4": {
+          "bymayo\\pdftransform\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "PDF Transform",
+        "handle": "pdf-transform",
+        "hasCpSettings": true,
+        "hasCpSection": false,
+        "changelogUrl": "https://raw.githubusercontent.com/bymayo/pdf-transform/master/CHANGELOG.md",
+        "components": {
+            "pdfTransformService": "bymayo\\pdftransform\\services\\PdfTransformService"
+        },
+        "class": "bymayo\\pdftransform\\PdfTransform"
+    }
+}

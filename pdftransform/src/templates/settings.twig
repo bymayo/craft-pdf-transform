@@ -1,0 +1,76 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * PDF Transform plugin for Craft CMS 3.x
+ *
+ * PDF Transform Settings.twig
+ *
+ * @author    ByMayo
+ * @copyright Copyright (c) 2018 ByMayo
+ * @link      http://bymayo.co.uk
+ * @package   PdfTransform
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("bymayo\\pdftransform\\assetbundles\\pdftransform\\PdfTransformAsset") %}
+
+{{ forms.textField({
+    label: 'Page Number',
+    instructions: 'The page number to render.',
+    id: 'page',
+    name: 'page',
+    value: settings['page'],
+    required: true
+    })
+}}
+
+{{ forms.selectField({
+    label: 'Output Image Volume',
+    instructions: 'The volume you want to output renders to',
+    id: 'imageVolume',
+    name: 'imageVolume',
+    value: settings['imageVolume'],
+    required: true,
+    options: volumes
+    })
+}}
+
+{{ forms.textField({
+    label: 'Image Resolution',
+    id: 'imageResolution',
+    name: 'imageResolution',
+    value: settings['imageResolution'],
+    required: true
+    })
+}}
+
+{{ forms.textField({
+    label: 'Image Quality',
+    id: 'imageQuality',
+    name: 'imageQuality',
+    value: settings['imageQuality'],
+    required: true
+    })
+}}
+
+{{ forms.selectField({
+    label: 'Image Format',
+    id: 'imageFormat',
+    name: 'imageFormat',
+    value: settings['imageFormat'],
+    required: true,
+    options: [
+      {
+        'label': 'JPEG (.jpg)',
+        'value': 'jpg'
+      },
+      {
+        'label': 'PNG (.png)',
+        'value': 'png'
+      }
+    ]
+    })
+}}
