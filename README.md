@@ -96,3 +96,4 @@ If you have any issues (Surely not!) then I'll aim to reply to these as soon as 
 - Option to generate the image when a PDF asset is uploaded, and run as a task. (Speeds up templating issues)
 - Optional variables (E.g. page, resolution etc)
 - Test and support remote assets
+- When PDF assets are updated, ensure old transformed image is removed.
