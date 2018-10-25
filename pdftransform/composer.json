@@ -1,6 +1,6 @@
 {
     "name": "bymayo/pdf-transform",
-    "description": "Transform PDF's in to Image",
+    "description": "Transform a PDF page to an image (JPEG, PNG)",
     "type": "craft-plugin",
     "version": "1.0.0",
     "keywords": [
@@ -11,8 +11,8 @@
         "pdf transform"
     ],
     "support": {
-        "docs": "https://github.com/bymayo/pdf-transform/blob/master/README.md",
-        "issues": "https://github.com/bymayo/pdf-transform/issues"
+        "docs": "https://github.com/bymayo/craft-pdf-transform/blob/master/README.md",
+        "issues": "https://github.com/bymayo/craft-pdf-transform/issues"
     },
     "license": "MIT",
     "authors": [
@@ -35,7 +35,7 @@
         "handle": "pdf-transform",
         "hasCpSettings": true,
         "hasCpSection": false,
-        "changelogUrl": "https://raw.githubusercontent.com/bymayo/pdf-transform/master/CHANGELOG.md",
+        "changelogUrl": "https://raw.githubusercontent.com/bymayo/craft-pdf-transform/master/CHANGELOG.md",
         "components": {
             "pdfTransformService": "bymayo\\pdftransform\\services\\PdfTransformService"
         },
