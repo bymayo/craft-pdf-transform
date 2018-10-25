@@ -2,8 +2,6 @@
 /**
  * PDF Transform plugin for Craft CMS 3.x
  *
- * Transform PDF's in to Image
- *
  * @link      http://bymayo.co.uk
  * @copyright Copyright (c) 2018 ByMayo
  */
