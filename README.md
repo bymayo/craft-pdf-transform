@@ -74,7 +74,7 @@ Read more about this issue - <https://github.com/spatie/pdf-to-image#issues-rega
 
 ### Dimensions
 
-PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set with and height dimensions (Other than 'Resolution'). 
+PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set width and height dimensions (Other than Image Resolution). 
 
 I'd recommend running the PDF image through one of the following options/plugins and setting the dimensions that way (Some of these also handle caching the image as well)
 
