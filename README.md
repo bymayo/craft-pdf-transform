@@ -28,27 +28,27 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 	</tr>
 	<tr>
 		<td>Page Number</td>
-    <td>`1`</td>
+    <td>1</td>
     <td>Set with page should in the PDF should be converted to an image.</td>
 	</tr>
   <tr>
 		<td>Image Volume</td>
-    <td>`null`</td>
+    <td>null</td>
     <td>Choose where converted images should be stored.</td>
 	</tr>
   <tr>
 		<td>Image Resolution</td>
-    <td>`72`</td>
+    <td>72</td>
     <td>Set the resolution of the converted image.</td>
 	</tr>
   <tr>
 		<td>Image Format</td>
-    <td>`jpg`</td>
+    <td>jpg</td>
     <td>Set the file format of the converted image.</td>
 	</tr>
   <tr>
 		<td>Image Quality</td>
-    <td>`100`</td>
+    <td>100</td>
     <td>Set the image quality of the converted image.</td>
 	</tr>
 </table>
@@ -58,19 +58,21 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 To transform a PDF to an image, and then output the URL use the following Twig tag:
 
 ```
-   {% set asset = entry.asset.one() %}
-   {{ craft.pdfTransform.url(asset) }}
+{% set asset = entry.asset.one() %}
+{{ craft.pdfTransform.url(asset) }}
 ```
 
-Be aware that this may output a large image, so we'd recommend running this through an image transform. See `Dimensions`.
+Be aware that this may output a large image, so we'd recommend running this through an image transform. See <a href="#dimensions">Dimensions</a>.
 
 ## Known Issues
 
-# Imagick / Ghostscript
+### Imagick / Ghostscript
 
-The plugin runs PDFs through a PDF library called <a href="https://github.com/spatie/pdf-to-image" target="_blank">pdf-to-image</a>. They have known issues with Imagick where transforms may fail if Ghost Script isn't accessible through Imagick - <https://github.com/spatie/pdf-to-image#issues-regarding-ghostscript> (Very easily resolvable)
+The plugin runs PDFs through a PDF library called <a href="https://github.com/spatie/pdf-to-image" target="_blank">pdf-to-image</a>. They have known issues with Imagick where transforms may fail if Ghost Script isn't accessible through Imagick (Very easily resolvable)
 
-# Dimensions
+Read more about this issue - <https://github.com/spatie/pdf-to-image#issues-regarding-ghostscript>.
+
+### Dimensions
 
 PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set with and height dimensions (Other than 'Resolution'). 
 
@@ -78,9 +80,9 @@ I'd recommend running the PDF image through one of the following options/plugins
 
 -   <a href="https://docs.craftcms.com/v2/image-transforms.html" target="_blank">Image Transforms by Craft</a>
 -   <a href="https://github.com/aelvan/Imager-Craft" target="_blank">Imager by aelvan</a>
--   <a href="https://github.com/nystudio107/craft-imageoptimize" target="_blank">Image Optimize by nystudio107</a> (Native)
+-   <a href="https://github.com/nystudio107/craft-imageoptimize" target="_blank">Image Optimize by nystudio107</a>
 
-# Local
+### Local
 
 Currently the plugin has only been tested with local assets, not assets through Amazon S3 etc. It may, or may not work with remote assets.
 
@@ -90,7 +92,7 @@ If you have any issues (Surely not!) then I'll aim to reply to these as soon as 
 
 ## Roadmap
 
--   Index assets with the chosen asset volume (Currently only saves the file to the directory)
--   Option to generate the image when a PDF asset is uploaded, and run as a task. (Speeds up templating issues)
--   Optional variables (E.g. page, resolution etc)
--   Test and support remote assets
+- Index assets with the chosen asset volume (Currently only saves the file to the directory)
+- Option to generate the image when a PDF asset is uploaded, and run as a task. (Speeds up templating issues)
+- Optional variables (E.g. page, resolution etc)
+- Test and support remote assets
