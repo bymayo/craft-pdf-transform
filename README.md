@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/bymayo/commerce-widgets/master/resources/icon.png" width="50">
+<img src="https://github.com/bymayo/craft-pdf-transform/blob/master/resources/icon.jpg" width="70">
 
 # PDF Transform for Craft 3.x
 
