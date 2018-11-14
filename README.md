@@ -64,7 +64,7 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 To transform a PDF to an image, and then output the URL use the following Twig tag:
 
 ```
-{% set asset = entry.asset.one() %}
+{% set asset = entry.pdfAsset.one() %}
 {{ craft.pdfTransform.url(asset) }}
 ```
 
