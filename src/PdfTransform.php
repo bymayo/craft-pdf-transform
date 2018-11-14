@@ -15,6 +15,7 @@ use bymayo\pdftransform\models\Settings;
 use Craft;
 use craft\base\Plugin;
 use craft\services\Plugins;
+use craft\services\Elements;
 use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
 
@@ -50,6 +51,11 @@ class PdfTransform extends Plugin
     // Public Methods
     // =========================================================================
 
+    public static function log($message)
+   {
+      Craft::getLogger()->log($message, \yii\log\Logger::LEVEL_INFO, 'pdf-transform');
+   }
+
     /**
      * @inheritdoc
      */
@@ -57,6 +63,15 @@ class PdfTransform extends Plugin
     {
         parent::init();
         self::$plugin = $this;
+
+        $fileTarget = new \craft\log\FileTarget(
+           [
+             'logFile' => Craft::getAlias('@storage/logs/pdfTransform.log'),
+            'categories' => ['pdf-transform']
+            ]
+         );
+
+      Craft::getLogger()->dispatcher->targets[] = $fileTarget;
 
         Event::on(
             CraftVariable::class,
@@ -85,6 +100,22 @@ class PdfTransform extends Plugin
             ),
             __METHOD__
         );
+
+        Event::on(
+            Elements::class,
+            Elements::EVENT_AFTER_SAVE_ELEMENT,
+            function(Event $event)   {
+
+                $asset = $event->element;
+
+                if ($event->isNew && $asset->extension === 'pdf' && $asset instanceof \craft\elements\Asset) {
+                  // @TODO trigger the imageToPdf function
+                  PdfTransform::$plugin->pdfTransformService->pdfToImage($asset);
+               }
+
+            }
+        );
+
     }
 
     // Protected Methods

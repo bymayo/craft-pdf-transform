@@ -80,17 +80,14 @@ class PdfTransformService extends Component
       if (!file_exists($this->getImagePath($asset, 'path')))
       {
 
-         // Convert PDF to Image
         $this->pdfToImage(
           $asset
         );
 
-        // Index asset
-        $this->indexAsset($asset);
-
       }
 
       // Get Asset Path
+      // @TODO Check to see if asset exists using actual Asset volume path from volume settings
       return $this->getImagePath($asset, 'url');
 
     }
@@ -117,6 +114,10 @@ class PdfTransformService extends Component
         ->setResolution($this->settings->imageResolution)
         ->setCompressionQuality($this->settings->imageQuality)
         ->saveImage($this->getImagePath($asset, 'path'));
+
+      $this->indexAsset($asset);
+
+      return true;
 
     }
 
