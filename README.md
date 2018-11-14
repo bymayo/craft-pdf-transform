@@ -6,6 +6,12 @@ PDF Transform is a Craft CMS plugin that transforms a PDF stored in Assets, to a
 
 A use case for this is to show the preview of a PDF before a user downloads that particular file.
 
+## Features
+
+- Transform PDF's to images via Twig (The file needs to be an existing Asset element)
+- PDF's are transformed when PDF's are uploaded to an image
+- Transformed PDF images are indexed and available in Assets like all other asset files.
+
 ## Install
 
 -   Install with Composer via `composer require bymayo/pdf-transform` from your project directory
@@ -62,7 +68,9 @@ To transform a PDF to an image, and then output the URL use the following Twig t
 {{ craft.pdfTransform.url(asset) }}
 ```
 
-Be aware that this may output a large image, so we'd recommend running this through an image transform. See <a href="#dimensions">Dimensions</a>.
+If the transformed image doesn't exist then the PDF will be transformed via the template. This may cause the template/page to become slow whilst the PDF is transformed.
+
+Be aware that this also may output a large image, so we'd recommend running this through an image transform. See <a href="#dimensions">Dimensions</a>.
 
 ## Known Issues
 
@@ -92,8 +100,7 @@ If you have any issues (Surely not!) then I'll aim to reply to these as soon as 
 
 ## Roadmap
 
-- Index assets with the chosen asset volume (Currently only saves the file to the directory)
-- Option to generate the image when a PDF asset is uploaded, and run as a task. (Speeds up templating issues)
+- Output asset element, not just the URL so that all Asset methods are available.
 - Optional variables (E.g. page, resolution etc)
-- Test and support remote assets
+- Test and support remote assets.
 - When PDF assets are updated, ensure old transformed image is removed.
