@@ -107,6 +107,7 @@ class PdfTransformService extends Component
     public function pdfToImage($asset)
     {
 
+      // @TODO Check to see if file exists
       $pdf = new Pdf($this->getPdfAssetPath($asset));
 
       $pdf
