@@ -106,11 +106,13 @@ class PdfTransform extends Plugin
             Elements::EVENT_AFTER_SAVE_ELEMENT,
             function(Event $event)   {
 
-                $asset = $event->element;
+                $element = $event->element;
 
-                if ($event->isNew && $asset->extension === 'pdf' && $asset instanceof \craft\elements\Asset) {
-                  // @TODO trigger the imageToPdf function
-                  PdfTransform::$plugin->pdfTransformService->pdfToImage($asset);
+               if ($element instanceof \craft\elements\Asset) {
+                  if ($event->isNew && $element->extension === 'pdf') {
+                    // @TODO trigger the imageToPdf function
+                    PdfTransform::$plugin->pdfTransformService->pdfToImage($element);
+                 }
                }
 
             }
