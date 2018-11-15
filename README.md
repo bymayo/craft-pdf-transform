@@ -14,8 +14,9 @@ A use case for this is to show the preview of a PDF before a user downloads that
 
 ## Install
 
--   Install with Composer via `composer require bymayo/pdf-transform` from your project directory
--   Install the plugin in the Craft Control Panel under `Settings > Plugins`
+-  Install with Composer via `composer require bymayo/pdf-transform` from your project directory
+-  Enable / Install the plugin in the Craft Control Panel under `Settings > Plugins`
+-  Customise the plugin settings, _*especially*_ the `Image Volume` option.
 
 You can also install the plugin via the Plugin Store in the Craft Admin CP by searching for `PDF Transform`.
 
