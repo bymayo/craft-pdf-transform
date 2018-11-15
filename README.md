@@ -9,8 +9,8 @@ A use case for this is to show the preview of a PDF before a user downloads that
 ## Features
 
 - Transform PDF's to images via Twig (The file needs to be an existing Asset element)
-- PDF's are transformed when PDF's are uploaded to an image
-- Transformed PDF images are indexed and available in Assets like all other asset files.
+- PDF's are transformed to an image when PDF's are uploaded via Assets or Asset fields.
+- Transformed PDF images are indexed and available in Assets like all other asset elements.
 
 ## Install
 
