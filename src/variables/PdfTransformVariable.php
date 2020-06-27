@@ -30,4 +30,7 @@ class PdfTransformVariable
      {
          return PdfTransform::$plugin->pdfTransformService->url($asset);
      }
+     public function asset($asset){
+         return PdfTransform::$plugin->pdfTransformService->asset($asset);
+     }
 }
