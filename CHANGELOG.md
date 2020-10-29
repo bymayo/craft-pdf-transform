@@ -1,5 +1,9 @@
 # PDF Transform Changelog
 
+## 1.0.3 - 2020-10-29
+### Fixed
+- Composer 2 Compatibility
+
 ## 1.0.2 - 2018-11-15
 ### Fixed
 - Issue where any element that was saved was throwing an error because it wasn't a PDF.
