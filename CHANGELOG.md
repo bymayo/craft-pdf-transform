@@ -1,5 +1,9 @@
 # PDF Transform Changelog
 
+## 1.0.5 - 2020-11-11
+### Fixed
+- Source path for asset bundle
+
 ## 1.0.4 - 2020-11-06
 ### Fixed
 - Case issue on settings Assets Bundle
