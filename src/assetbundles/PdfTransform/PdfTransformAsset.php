@@ -27,7 +27,7 @@ class PdfTransformAsset extends AssetBundle
      */
     public function init()
     {
-        $this->sourcePath = "@bymayo/pdftransform/assetbundles/pdftransform/dist";
+        $this->sourcePath = "@bymayo/pdftransform/assetbundles/PdfTransform/dist";
 
         $this->depends = [
             CpAsset::class,
