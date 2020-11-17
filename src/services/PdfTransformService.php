@@ -73,6 +73,23 @@ class PdfTransformService extends Component
       return $asset->filename . '-' . $asset->id . '.' . $this->settings->imageFormat;
    }
 
+  public function getImageAsset($asset)
+  {
+    $assetQuery = \craft\elements\Asset::find()
+      ->volume($this->getImageVolume())
+      ->filename($this->getFileName($asset))
+      ->one();
+    return $assetQuery;
+  }
+  
+  public function asset($asset)
+  {
+    if (!file_exists($this->getImagePath($asset, 'path'))) {
+      $this->pdfToImage($asset);
+    }
+    return $this->getImageAsset($asset);
+  }
+
     public function url($asset)
     {
 

@@ -14,16 +14,16 @@ A use case for this is to show the preview of a PDF before a user downloads that
 
 ## Install
 
--  Install with Composer via `composer require bymayo/pdf-transform` from your project directory
--  Enable / Install the plugin in the Craft Control Panel under `Settings > Plugins`
--  Customise the plugin settings, _*especially*_ the `Image Volume` option.
+- Install with Composer via `composer require bymayo/pdf-transform` from your project directory
+- Enable / Install the plugin in the Craft Control Panel under `Settings > Plugins`
+- Customise the plugin settings, _*especially*_ the `Image Volume` option.
 
 You can also install the plugin via the Plugin Store in the Craft Admin CP by searching for `PDF Transform`.
 
 ## Requirements
 
 - Craft CMS 3.x
-- Imagick / Ghostscript 
+- Imagick / Ghostscript
 - MySQL (No PostgreSQL support)
 
 ## Configuration
@@ -74,6 +74,17 @@ If the transformed image doesn't exist then the PDF will be transformed via the 
 
 Be aware that this also may output a large image, so we'd recommend running this through an image transform. See <a href="#dimensions">Dimensions</a>.
 
+### Getting Generated Image as Craft Asset
+
+If you need to get the transformed PDF as a craft assset
+
+```
+{% set asset = entry.pdfAsset.one() %}
+{% set transformedAsset = craft.pdfTransform.asset(asset) %}
+```
+
+You can know manage it like any other craft asset, including setting Craft CMS transforms to it.
+
 ## Known Issues
 
 ### Imagick / Ghostscript
@@ -84,13 +95,13 @@ Read more about this issue - <https://github.com/spatie/pdf-to-image#issues-rega
 
 ### Dimensions
 
-PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set width and height dimensions (Other than Image Resolution). 
+PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set width and height dimensions (Other than Image Resolution).
 
 I'd recommend running the PDF image through one of the following options/plugins and setting the dimensions that way (Some of these also handle caching the image as well)
 
--   <a href="https://docs.craftcms.com/v2/image-transforms.html" target="_blank">Image Transforms by Craft</a>
--   <a href="https://github.com/aelvan/Imager-Craft" target="_blank">Imager by aelvan</a>
--   <a href="https://github.com/nystudio107/craft-imageoptimize" target="_blank">Image Optimize by nystudio107</a>
+- <a href="https://docs.craftcms.com/v2/image-transforms.html" target="_blank">Image Transforms by Craft</a>
+- <a href="https://github.com/aelvan/Imager-Craft" target="_blank">Imager by aelvan</a>
+- <a href="https://github.com/nystudio107/craft-imageoptimize" target="_blank">Image Optimize by nystudio107</a>
 
 ### Local
 
