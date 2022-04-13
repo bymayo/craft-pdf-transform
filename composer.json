@@ -22,8 +22,8 @@
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0-RC1",
-        "spatie/pdf-to-image": "^1.8"
+        "craftcms/cms": "^3.0.0",
+        "spatie/pdf-to-image": "^2.0"
     },
     "autoload": {
         "psr-4": {
@@ -40,5 +40,11 @@
             "pdfTransformService": "bymayo\\pdftransform\\services\\PdfTransformService"
         },
         "class": "bymayo\\pdftransform\\PdfTransform"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
     }
 }
