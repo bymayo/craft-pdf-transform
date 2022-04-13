@@ -1,5 +1,11 @@
 # PDF Transform Changelog
 
+## 1.0.6 - 2022-04-13
+### Fixed
+- Updated Composer dependencies
+- Updated Composer to work with Composer 2
+- Added PHP 8.0 support with spatie/pdf-to-image package
+
 ## 1.0.5 - 2020-11-11
 ### Fixed
 - Source path for asset bundle
