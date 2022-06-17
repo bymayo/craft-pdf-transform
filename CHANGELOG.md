@@ -1,5 +1,10 @@
 # PDF Transform Changelog
 
+## 2.0.0 - 2022-06-17
+### Changed
+- Now requires PHP ^8.0.0.
+- Now requires Craft CMS ^4.0.0
+
 ## 1.0.6 - 2022-04-13
 ### Fixed
 - Updated Composer dependencies

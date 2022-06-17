@@ -1,6 +1,6 @@
 <?php
 /**
- * PDF Transform plugin for Craft CMS 3.x
+ * PDF Transform plugin for Craft CMS
  *
  * @link      http://bymayo.co.uk
  * @copyright Copyright (c) 2018 ByMayo
