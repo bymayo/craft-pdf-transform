@@ -12,6 +12,7 @@ use bymayo\pdftransform\PdfTransform;
 
 use Craft;
 use craft\base\Component;
+use craft\helpers\App;
 use Yii;
 use craft\services\Volumes;
 use Spatie\PdfToImage\Pdf;
@@ -31,7 +32,9 @@ class PdfTransformService extends Component
     // =========================================================================
 
     public function __construct() {
+
       $this->settings = PdfTransform::$plugin->getSettings();
+      
     }
 
     public function getVolumeOptions()
@@ -60,10 +63,17 @@ class PdfTransformService extends Component
       return $volume;
    }
 
+   public function getImageFs()
+   {
+     $volume = $this->getImageVolume();
+     $fs = $volume->getFs();
+     return $fs;
+  }
+
     public function getImagePath($asset, $aliasType)
     {
 
-      return Yii::getAlias($this->getImageVolume()->$aliasType) . '/' . $this->getFileName($asset);
+      return Yii::getAlias(App::parseEnv($this->getImageFs()->$aliasType)) . '/' . $this->getFileName($asset);
 
     }
 
@@ -76,7 +86,7 @@ class PdfTransformService extends Component
     public function url($asset)
     {
 
-      //  @TODO Check to see if asset exists using actual Asset volume path from volume settings
+      //  @TODO: Check to see if asset exists using actual Asset volume path from volume settings
       if (!file_exists($this->getImagePath($asset, 'path')))
       {
 
@@ -87,7 +97,7 @@ class PdfTransformService extends Component
       }
 
       // Get Asset Path
-      // @TODO Check to see if asset exists using actual Asset volume path from volume settings
+      // @TODO: Check to see if asset exists using actual Asset volume path from volume settings
       return $this->getImagePath($asset, 'url');
 
     }
@@ -95,7 +105,7 @@ class PdfTransformService extends Component
     public function getPdfAssetPath($asset)
     {
 
-      $volumePath = Yii::getAlias($asset->getVolume()->path);
+      $volumePath = Yii::getAlias(App::parseEnv($asset->getVolume()->getFs()->path));
       $folderPath = $asset->getPath();
 
       $assetPath = $volumePath . '/' . $folderPath;
@@ -107,7 +117,7 @@ class PdfTransformService extends Component
     public function pdfToImage($asset)
     {
 
-      // @TODO Check to see if file exists
+      // @TODO: Check to see if file exists
       $pdf = new Pdf($this->getPdfAssetPath($asset));
 
       $pdf
@@ -126,14 +136,19 @@ class PdfTransformService extends Component
     {
 
       $volume = $this->getImageVolume();
+      $fs = $this->getImageFs();
       $fileName = $this->getFileName($asset);
 
-      if ($volume->fileExists($fileName)) {
+      if ($fs->fileExists($fileName)) {
 
-         Craft::$app->getAssetIndexer()->indexFile(
-            $volume,
-            $fileName
-         );
+        $assetIndexer = Craft::$app->getAssetIndexer();
+        $session = $assetIndexer->createIndexingSession([$volume]);
+
+        Craft::$app->getAssetIndexer()->indexFile(
+          $volume,
+          $fileName,
+          $session->id
+        );
 
       }
 
