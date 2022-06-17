@@ -1,5 +1,9 @@
 # PDF Transform Changelog
 
+## 1.0.7 - 2022-06-17
+### Changed
+- Icon to work with darkmode themes
+
 ## 1.0.6 - 2022-04-13
 ### Fixed
 - Updated Composer dependencies

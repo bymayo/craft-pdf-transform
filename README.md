@@ -1,6 +1,6 @@
-<img src="https://github.com/bymayo/craft-pdf-transform/blob/master/resources/icon.jpg" width="60">
+<img src="https://github.com/bymayo/craft-pdf-transform/blob/craft-3/resources/icon.png" width="60">
 
-# PDF Transform for Craft CMS 3.x
+# PDF Transform for Craft CMS 3
 
 PDF Transform is a Craft CMS plugin that transforms a PDF stored in Assets, to an image. This can then be output via Twig in to a template.
 
