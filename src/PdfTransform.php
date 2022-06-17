@@ -20,6 +20,7 @@ use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
 
 use yii\base\Event;
+use yii\log\FileTarget;
 
 /**
  * Class PdfTransform
@@ -64,14 +65,14 @@ class PdfTransform extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        $fileTarget = new \craft\log\FileTarget(
-           [
-             'logFile' => Craft::getAlias('@storage/logs/pdfTransform.log'),
-            'categories' => ['pdf-transform']
+        $fileTarget = new FileTarget(
+            [
+              'logFile' => Craft::getAlias('@storage/logs/pdfTransform.log'),
+             'categories' => ['pdf-transform']
             ]
-         );
-
-      Craft::getLogger()->dispatcher->targets[] = $fileTarget;
+        );
+ 
+        Craft::getLogger()->dispatcher->targets[] = $fileTarget;
 
         Event::on(
             CraftVariable::class,
