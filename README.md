@@ -1,4 +1,4 @@
-<img src="https://github.com/bymayo/craft-pdf-transform/blob/master/resources/icon.jpg" width="60">
+<img src="https://github.com/bymayo/craft-pdf-transform/blob/craft-4/resources/icon.png" width="60">
 
 # PDF Transform for Craft CMS 4
 
