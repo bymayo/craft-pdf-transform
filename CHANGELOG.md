@@ -1,5 +1,11 @@
 # PDF Transform Changelog
 
+## 2.0.1 - 2022-11-14
+### Added
+- Amazon S3 Compatability
+- Servd Compatability (Thanks @mattgrayisok / @servd)
+- New `.render()` method that outputs the transformed image as a Craft asset (No longer just the URL 🎉)
+
 ## 2.0.0 - 2022-06-17
 ### Changed
 - Now requires PHP ^8.0.0.

@@ -70,87 +70,76 @@ class PdfTransformService extends Component
      return $fs;
   }
 
-    public function getImagePath($asset, $aliasType)
-    {
-
-      return Yii::getAlias(App::parseEnv($this->getImageFs()->$aliasType)) . '/' . $this->getFileName($asset);
-
-    }
-
    public function getFileName($asset)
    {
       // e.g. filename-12345.jpg
       return $asset->filename . '-' . $asset->id . '.' . $this->settings->imageFormat;
    }
 
-    public function url($asset)
-    {
+   public function render($asset)
+   {
 
-      //  @TODO: Check to see if asset exists using actual Asset volume path from volume settings
-      if (!file_exists($this->getImagePath($asset, 'path')))
-      {
+    $volume = $this->getImageVolume();
+     $fs = $this->getImageFs();
+     $fileName = $this->getFileName($asset);
 
-        $this->pdfToImage(
-          $asset
-        );
+     if ($fs->fileExists($fileName)) {
+       
+       $transformedAsset = Asset::find()
+         ->volumeId($volume->id)
+         ->filename($fileName)
+         ->one();
 
-      }
+       return $transformedAsset;
 
-      // Get Asset Path
-      // @TODO: Check to see if asset exists using actual Asset volume path from volume settings
-      return $this->getImagePath($asset, 'url');
+     }
 
-    }
+     return $this->pdfToImage(
+       $asset
+     );
 
-    public function getPdfAssetPath($asset)
-    {
+   }
 
-      $volumePath = Yii::getAlias(App::parseEnv($asset->getVolume()->getFs()->path));
-      $folderPath = $asset->getPath();
+   public function pdfToImage($asset)
+   {
 
-      $assetPath = $volumePath . '/' . $folderPath;
+     $filename = $this->getFileName($asset);
+     $volume = $this->getImageVolume();
 
-      return $assetPath;
+     $pathService = Craft::$app->getPath();
+     $tempPath = $pathService->getTempPath(true) . '/' . mt_rand(0, 9999999) . '.png';
+     file_put_contents($tempPath, file_get_contents($asset->url));
 
-    }
+     $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
 
-    public function pdfToImage($asset)
-    {
+     $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
 
-      // @TODO: Check to see if file exists
-      $pdf = new Pdf($this->getPdfAssetPath($asset));
+     $pdf = new Pdf($tempPath);
 
-      $pdf
-        ->setPage($this->settings->page)
-        ->setResolution($this->settings->imageResolution)
-        ->setCompressionQuality($this->settings->imageQuality)
-        ->saveImage($this->getImagePath($asset, 'path'));
+     $pdf
+       ->setPage($this->settings->page)
+       ->setResolution($this->settings->imageResolution)
+       ->setCompressionQuality($this->settings->imageQuality)
+       ->saveImage($tempPathTransform);
 
-      $this->indexAsset($asset);
+     $assetTransformed = new Asset();
+     $assetTransformed->tempFilePath = $tempPathTransform;
+     $assetTransformed->filename = $filename;
+     $assetTransformed->folderId = $folder->id;
+     $assetTransformed->newFolderId = $folder->id;
+     $assetTransformed->kind = 'Image';
+     $assetTransformed->title = $asset->title;
+     $assetTransformed->avoidFilenameConflicts = true;
+     $assetTransformed->setVolumeId($volume->id);
+     $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
 
-      return true;
+     $assetTransformed->validate();
+       
+       if (Craft::$app->getElements()->saveElement($assetTransformed, false))
+       {
+         return $assetTransformed;
+       }
 
-    }
-
-    public function indexAsset($asset)
-    {
-
-      $volume = $this->getImageVolume();
-      $fs = $this->getImageFs();
-      $fileName = $this->getFileName($asset);
-
-      if ($fs->fileExists($fileName)) {
-
-        $assetIndexer = Craft::$app->getAssetIndexer();
-        $session = $assetIndexer->createIndexingSession([$volume]);
-
-        Craft::$app->getAssetIndexer()->indexFile(
-          $volume,
-          $fileName,
-          $session->id
-        );
-
-      }
 
    }
 
