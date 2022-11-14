@@ -26,8 +26,21 @@ class PdfTransformVariable
      * @param null $optional
      * @return string
      */
+
+    public function render($asset)
+    {
+        return PdfTransform::$plugin->pdfTransformService->render($asset);
+    }
+
      public function url($asset)
      {
-         return PdfTransform::$plugin->pdfTransformService->url($asset);
+
+        $render = PdfTransform::$plugin->pdfTransformService->render($asset);
+
+        if ($render)
+        {
+            return $render->getUrl();
+        }
+        
      }
 }
