@@ -5,7 +5,6 @@
 PDF Transform is a Craft CMS plugin that transforms a PDF stored in Assets, to an image. This can then be output via Twig in to a template.
 
 A use case for this is to show the preview of a PDF before a user downloads that particular file.
-
 ## Features
 
 - Transform PDF's to images via Twig (The file needs to be an existing Asset element)
@@ -68,10 +67,13 @@ To transform a PDF to an image use the following Twig tag:
 
 ```
 {% set pdfToTransform = entry.pdfAsset.one() %}
-{{ craft.pdfTransform.render(pdfToTransform) }}
+
+{% set transformedPdf = craft.pdfTransform.render(pdfToTransform) %}
+
+{{ transformedPdf.one().url }}
 ```
 
-The transformed PDF (Now an image stored in Assets) can then be output using `{{ pdfToTransform.one().url }}`. Or get any Asset property e.g. Title, ID, Filename etc.
+The transformed PDF (Now an image stored in Assets) can then be output using `{{ transformedPdf.one().url }}`. Or get any Asset property e.g. `title`, `id`, `filename` etc.
 
 If the transformed image doesn't exist then the PDF will be transformed via the template. This may cause the template/page to become slow whilst the PDF is transformed.
 
