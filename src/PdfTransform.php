@@ -52,9 +52,9 @@ class PdfTransform extends Plugin
     // =========================================================================
 
     public static function log($message)
-   {
+    {
       Craft::getLogger()->log($message, \yii\log\Logger::LEVEL_INFO, 'pdf-transform');
-   }
+    }
 
     /**
      * @inheritdoc
@@ -71,7 +71,7 @@ class PdfTransform extends Plugin
             ]
          );
 
-      Craft::getLogger()->dispatcher->targets[] = $fileTarget;
+        Craft::getLogger()->dispatcher->targets[] = $fileTarget;
 
         Event::on(
             CraftVariable::class,
@@ -108,12 +108,11 @@ class PdfTransform extends Plugin
 
                 $element = $event->element;
 
-               if ($element instanceof \craft\elements\Asset) {
-                  if ($event->isNew && $element->extension === 'pdf') {
-                    // @TODO: trigger the imageToPdf function
-                    PdfTransform::$plugin->pdfTransformService->pdfToImage($element);
-                 }
-               }
+                if ($element instanceof \craft\elements\Asset) {
+                    if ($event->isNew && $element->extension === 'pdf' && $this->getSettings()->transformPdfsOnUpload) {
+                        PdfTransform::$plugin->pdfTransformService->pdfToImage($element);
+                    }
+                }
 
             }
         );

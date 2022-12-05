@@ -14,6 +14,7 @@ use Imagick;
 use Craft;
 use craft\base\Component;
 use Yii;
+use yii\base\Exception;
 use craft\services\Volumes;
 use Spatie\PdfToImage\Pdf;
 use craft\elements\Asset;
@@ -27,7 +28,7 @@ use craft\helpers\Path;
 class PdfTransformService extends Component
 {
 
-  private $settings;
+    private $settings;
 
     // Public Methods
     // =========================================================================
@@ -39,7 +40,12 @@ class PdfTransformService extends Component
     public function getVolumeOptions()
     {
 
-      $volumesArray = array();
+      $volumesArray = array(
+        array(
+            'label' => 'Select a volume',
+            'value' => null
+          )
+      );
       $volumes = new Volumes;
 
       foreach ($volumes->getAllVolumes() as $volume) {
@@ -58,8 +64,13 @@ class PdfTransformService extends Component
     public function getImageVolume()
     {
       $imageVolumeId = $this->settings->imageVolume;
-      $volume = Craft::$app->getVolumes()->getVolumeById($imageVolumeId);
-      return $volume;
+
+      if ($imageVolumeId) {
+        $volume = Craft::$app->getVolumes()->getVolumeById($imageVolumeId);
+        return $volume;
+      }
+
+      throw new Exception('PDF Transform: No output image volume selected in settings');
    }
 
    public function getFileName($asset)
@@ -97,39 +108,46 @@ class PdfTransformService extends Component
       $filename = $this->getFileName($asset);
       $volume = $this->getImageVolume();
 
-      $pathService = Craft::$app->getPath();
-      $tempPath = $pathService->getTempPath(true) . '/' . mt_rand(0, 9999999) . '.png';
-      file_put_contents($tempPath, file_get_contents($asset->url));
+      try {
 
-      $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
+        $pathService = Craft::$app->getPath();
+        $tempPath = $pathService->getTempPath(true) . '/' . mt_rand(0, 9999999) . '.png';
+        file_put_contents($tempPath, file_get_contents($asset->url));
+  
+        $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
+  
+        $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
 
-      $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+        $pdf = new Pdf($tempPath);
 
-      $pdf = new Pdf($tempPath);
+        $pdf
+          ->setPage($this->settings->page)
+          ->setResolution($this->settings->imageResolution)
+          ->setCompressionQuality($this->settings->imageQuality)
+          ->saveImage($tempPathTransform);
 
-      $pdf
-        ->setPage($this->settings->page)
-        ->setResolution($this->settings->imageResolution)
-        ->setCompressionQuality($this->settings->imageQuality)
-        ->saveImage($tempPathTransform);
+        $assetTransformed = new Asset();
+        $assetTransformed->tempFilePath = $tempPathTransform;
+        $assetTransformed->filename = $filename;
+        $assetTransformed->folderId = $folder->id;
+        $assetTransformed->newFolderId = $folder->id;
+        $assetTransformed->kind = 'Image';
+        $assetTransformed->title = $asset->title;
+        $assetTransformed->avoidFilenameConflicts = true;
+        $assetTransformed->setVolumeId($volume->id);
+        $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
 
-      $assetTransformed = new Asset();
-      $assetTransformed->tempFilePath = $tempPathTransform;
-      $assetTransformed->filename = $filename;
-      $assetTransformed->folderId = $folder->id;
-      $assetTransformed->newFolderId = $folder->id;
-      $assetTransformed->kind = 'Image';
-      $assetTransformed->title = $asset->title;
-      $assetTransformed->avoidFilenameConflicts = true;
-      $assetTransformed->setVolumeId($volume->id);
-      $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
-
-      $assetTransformed->validate();
-        
+        $assetTransformed->validate();
+          
         if (Craft::$app->getElements()->saveElement($assetTransformed, false))
         {
           return $assetTransformed;
         }
+
+      }  
+      catch (Exception $e) {
+        throw new Exception('PDF Transform: Could not transform PDF to image');
+      }
 
 
     }

@@ -1,5 +1,16 @@
 # PDF Transform Changelog
 
+## 1.0.9 - 2022-12-05
+
+> **Note**
+> After upgrading ensure you switch on the "Transform PDF's on upload" setting in the plugin settings. Previously this was automatically on, but now defaults to false.
+
+### Added
+- Setting to optionally turn on PDF transforms on asset upload
+
+### Fixed
+- Added human friendly exception if volume is not set in the plugin settings
+
 ## 1.0.8 - 2022-11-14
 ### Added
 - Amazon S3 Compatability

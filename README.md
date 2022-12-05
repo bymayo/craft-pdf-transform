@@ -16,7 +16,7 @@ A use case for this is to show the preview of a PDF before a user downloads that
 
 -  Install with Composer via `composer require bymayo/pdf-transform` from your project directory
 -  Enable / Install the plugin in the Craft Control Panel under `Settings > Plugins`
--  Customise the plugin settings, _*especially*_ the `Image Volume` option.
+-  Customise the plugin settings, _*especially*_ the `Output Image Volume` option.
 
 You can also install the plugin via the Plugin Store in the Craft Admin CP by searching for `PDF Transform`.
 
@@ -34,30 +34,35 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
     <td><strong>Default</strong></td>
 		<td><strong>Description</strong></td>
 	</tr>
+  <tr>
+		<td>Transform PDF's on upload</td>
+    <td>false</td>
+    <td>Automatically transform any PDF file uploaded to output image volume via Assets.</td>
+	</tr>
+  <tr>
+		<td>Output Image Volume</td>
+    <td>null</td>
+    <td>The volume you want to output transformed PDF's to.</td>
+	</tr>
 	<tr>
 		<td>Page Number</td>
     <td>1</td>
-    <td>Set with page should in the PDF should be converted to an image.</td>
-	</tr>
-  <tr>
-		<td>Image Volume</td>
-    <td>null</td>
-    <td>Choose where converted images should be stored.</td>
+    <td>Set which page in the PDF should be transformed to an image.</td>
 	</tr>
   <tr>
 		<td>Image Resolution</td>
     <td>72</td>
-    <td>Set the resolution of the converted image.</td>
+    <td>Set the resolution of the transformed image.</td>
 	</tr>
   <tr>
 		<td>Image Format</td>
     <td>jpg</td>
-    <td>Set the file format of the converted image.</td>
+    <td>Set the file format of the transformed image.</td>
 	</tr>
   <tr>
 		<td>Image Quality</td>
     <td>100</td>
-    <td>Set the image quality of the converted image.</td>
+    <td>Set the image quality of the transformed image.</td>
 	</tr>
 </table>
 
@@ -70,10 +75,10 @@ To transform a PDF to an image use the following Twig tag:
 
 {% set transformedPdf = craft.pdfTransform.render(pdfToTransform) %}
 
-{{ transformedPdf.one().url }}
+{{ transformedPdf.url }}
 ```
 
-The transformed PDF (Now an image stored in Assets) can then be output using `{{ transformedPdf.one().url }}`. Or get any Asset property e.g. `title`, `id`, `filename` etc.
+The transformed PDF (Now an image stored in Assets) can then be output using `{{ transformedPdf.url }}`. Or get any Asset property e.g. `title`, `id`, `filename` etc.
 
 If the transformed image doesn't exist then the PDF will be transformed via the template. This may cause the template/page to become slow whilst the PDF is transformed.
 

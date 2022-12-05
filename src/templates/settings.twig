@@ -2,24 +2,32 @@
 
 {% do view.registerAssetBundle("bymayo\\pdftransform\\assetbundles\\PdfTransform\\PdfTransformAsset") %}
 
-{{ forms.textField({
-    label: 'Page Number',
-    instructions: 'The page number to render.',
-    id: 'page',
-    name: 'page',
-    value: settings['page'],
-    required: true
-    })
-}}
+{{ forms.lightswitchField({
+    label: 'Transform PDF\'s on upload',
+    instructions: 'Automatically transform any PDF file uploaded to output image volume via Assets.',
+    id: 'transformPdfsOnUpload',
+    name: 'transformPdfsOnUpload',
+    on: settings['transformPdfsOnUpload'],
+  }) }}
 
 {{ forms.selectField({
     label: 'Output Image Volume',
-    instructions: 'The volume you want to output renders to',
+    instructions: 'The volume you want to output transformed PDF\'s to',
     id: 'imageVolume',
     name: 'imageVolume',
     value: settings['imageVolume'],
     required: true,
     options: volumes
+    })
+}}
+
+{{ forms.textField({
+    label: 'Page Number',
+    instructions: 'The page number to transform.',
+    id: 'page',
+    name: 'page',
+    value: settings['page'],
+    required: true
     })
 }}
 
