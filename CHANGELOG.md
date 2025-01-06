@@ -1,5 +1,10 @@
 # PDF Transform Changelog
 
+## 1.0.10 - 2025-01-06
+
+### Added
+- Option to extract keywords from PDFs and save them to the database
+
 ## 1.0.9 - 2022-12-05
 
 > **Note**

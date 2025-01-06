@@ -27,6 +27,7 @@ class Settings extends Model
      * @var string
      */
     public $transformPdfsOnUpload = false;
+    public $indexKeywords = false;
     public $imageVolume = null;
     public $page = 1;
     public $imageFormat = 'jpg';
@@ -43,7 +44,7 @@ class Settings extends Model
     {
         return [
             [['page', 'imageVolume', 'imageResolution', 'imageQuality'], 'integer'],
-            ['transformPdfsOnUpload', 'boolean'],
+            [['transformPdfsOnUpload', 'indexKeywords'], 'boolean'],
             ['imageFormat', 'string']
         ];
     }

@@ -2,7 +2,7 @@
     "name": "bymayo/pdf-transform",
     "description": "Transform a PDF page to an image (JPEG, PNG)",
     "type": "craft-plugin",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "keywords": [
         "craft",
         "cms",
@@ -23,7 +23,9 @@
     ],
     "require": {
         "craftcms/cms": "^3.0.0",
-        "spatie/pdf-to-image": "^2.0"
+        "spatie/pdf-to-image": "^2.0",
+        "spatie/pdf-to-text": "^1.54",
+        "donatello-za/rake-php-plus": "^1.0"
     },
     "autoload": {
         "psr-4": {

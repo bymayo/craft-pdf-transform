@@ -43,4 +43,10 @@ class PdfTransformVariable
         }
         
      }
+
+     public function getKeywords($asset)
+     {
+        return PdfTransform::$plugin->pdfTransformService->getKeywords($asset);
+     }
+
 }

@@ -10,6 +10,14 @@
     on: settings['transformPdfsOnUpload'],
   }) }}
 
+{{ forms.lightswitchField({
+    label: 'Index Keywords',
+    instructions: 'Grab keywords from the PDF\'s and index them in the database. Useful for using in search queries.',
+    id: 'indexKeywords',
+    name: 'indexKeywords',
+    on: settings['indexKeywords'],
+  }) }}
+
 {{ forms.selectField({
     label: 'Output Image Volume',
     instructions: 'The volume you want to output transformed PDF\'s to',

@@ -8,7 +8,8 @@
 
 namespace bymayo\pdftransform;
 
-use bymayo\pdftransform\services\PdfTransformService as PdfTransformServiceService;
+use bymayo\pdftransform\services\PdfTransformService;
+use bymayo\pdftransform\utilities\PdfTransformUtility;
 use bymayo\pdftransform\variables\PdfTransformVariable;
 use bymayo\pdftransform\models\Settings;
 
@@ -18,6 +19,10 @@ use craft\services\Plugins;
 use craft\services\Elements;
 use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
+use craft\events\RegisterComponentTypesEvent;
+use craft\services\Utilities;
+use craft\web\View;
+use craft\events\RegisterTemplateRootsEvent;
 
 use yii\base\Event;
 
@@ -73,6 +78,12 @@ class PdfTransform extends Plugin
 
         Craft::getLogger()->dispatcher->targets[] = $fileTarget;
 
+        Craft::setAlias('@pdf-transform', __DIR__);
+
+        $this->setComponents([
+            'pdfTransform' => PdfTransformService::class
+        ]);
+
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
@@ -110,10 +121,28 @@ class PdfTransform extends Plugin
 
                 if ($element instanceof \craft\elements\Asset) {
                     if ($event->isNew && $element->extension === 'pdf' && $this->getSettings()->transformPdfsOnUpload) {
-                        PdfTransform::$plugin->pdfTransformService->pdfToImage($element);
+                        PdfTransform::$plugin->pdfTransformService->pdfToImage($element, $this->settings->indexKeywords);
                     }
                 }
 
+            }
+        );
+
+        Event::on(
+            View::class, 
+            View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, 
+            function (RegisterTemplateRootsEvent $event) {
+                if (is_dir($baseDir = $this->getBasePath() . DIRECTORY_SEPARATOR . 'templates')) {
+                    $event->roots[$this->id] = $baseDir;
+                }
+            }
+        );
+
+        Event::on(
+            Utilities::class,
+            Utilities::EVENT_REGISTER_UTILITY_TYPES,
+            function(RegisterComponentTypesEvent $event) {
+                $event->types[] = PdfTransformUtility::class;
             }
         );
 

@@ -19,6 +19,13 @@ use craft\services\Volumes;
 use Spatie\PdfToImage\Pdf;
 use craft\elements\Asset;
 use craft\helpers\Path;
+use Spatie\PdfToText\Pdf as PdfToText;
+use DonatelloZa\RakePlus\RakePlus;
+use craft\helpers\Queue;
+use yii\db\Query;
+
+
+use bymayo\pdftransform\jobs\TransformJob;
 
 /**
  * @author    ByMayo
@@ -97,16 +104,19 @@ class PdfTransformService extends Component
       }
 
       return $this->pdfToImage(
-        $asset
+        $asset,
+        $this->settings->indexKeywords
       );
 
     }
 
-    public function pdfToImage($asset)
+    public function pdfToImage($asset, $indexKeywords = false)
     {
 
       $filename = $this->getFileName($asset);
       $volume = $this->getImageVolume();
+
+      // @TODO: Check if file exists in volume here, and check to see if if the dates match
 
       try {
 
@@ -141,15 +151,137 @@ class PdfTransformService extends Component
           
         if (Craft::$app->getElements()->saveElement($assetTransformed, false))
         {
+
+          if ($indexKeywords) 
+          {
+            $this->indexKeywords($asset, $assetTransformed);
+          }
+
           return $assetTransformed;
         }
 
       }  
       catch (Exception $e) {
+        PdfTransform::log($e->getMessage());
         throw new Exception('PDF Transform: Could not transform PDF to image');
       }
 
+    }
+
+    public function getKeywords($asset)
+    {
+
+      $row = (new Query())
+        ->select('*')
+        ->from('pdftransform_keywords')
+        ->where(['pdfAssetId' => $asset->id])
+        ->one();
+
+      if ($row) {
+        return $row['keywords'];
+      }
 
     }
+
+    public function indexKeywords($pdfAsset, $imageAsset)
+    {
+
+      $keywords = $this->getKeywordsFromPdf($pdfAsset);
+
+      try {
+
+        $row = (new Query())
+          ->select('*')
+          ->from('pdftransform_keywords')
+          ->where(['pdfAssetId' => $pdfAsset->id])
+          ->one();
+
+        if ($row) {
+
+          Craft::$app->getDb()->createCommand()
+            ->update('pdftransform_keywords', [
+                'keywords' => $keywords
+            ], [
+                'pdfAssetId' => $pdfAsset->id
+            ])
+            ->execute();
+
+        }
+
+        else {
+
+          Craft::$app->getDb()->createCommand()
+            ->insert('pdftransform_keywords', [
+                'pdfAssetId' => $pdfAsset->id,
+                'imageAssetId' => $imageAsset->id,
+                'keywords' => $keywords
+            ])
+            ->execute();
+
+        }
+
+        return true;
+
+
+      }
+      catch (Exception $e) {
+        PdfTransform::log($e->getMessage());
+        throw new Exception('PDF Transform: Could not index keywords');
+      }
+    
+
+    }
+
+    public function getKeywordsFromPdf($asset)
+    {
+
+      $asset = $asset->getCopyOfFile();
+
+      $text = PdfToText::getText($asset);
+
+      // Extract with a minimum char length of 5
+      $phrases = RakePlus::create($text, 'en_US', 5)->sort('asc')->get();
+
+      if (count($phrases) > 150) {
+          $keywords = array_slice($phrases, 0, 150);
+      } else {
+          $keywords = $phrases;
+      }
+
+      $keywordString = implode(', ', $keywords);
+
+      $sanitizedKeywords = preg_replace('/[^0-9A-Za-z, ]+/', '', $keywordString); // Keep only letters, numbers, commas and spaces
+      $sanitizedKeywords = preg_replace('/\s{2,}/', ' ', $sanitizedKeywords); // Remove double spaces
+
+      return $sanitizedKeywords;
+
+    }
+
+    public function transformVolumeFolder($volumeFolder, $indexKeywords = false)
+    {
+
+      if (!$volumeFolder) {
+        throw new Exception('PDF Transform: No volume selected');
+      }
+
+      $assets = Asset::find()
+        ->folderId($volumeFolder)
+        ->includeSubfolders()
+        ->all();
+
+      if (!$assets) {
+        throw new Exception('PDF Transform: No assets found in volume');
+      }
+
+      $job = new TransformJob([
+        'assets' => $assets,
+        'indexKeywords' => $indexKeywords
+      ]);
+
+      Queue::push($job);
+
+    }
+
+
 
 }

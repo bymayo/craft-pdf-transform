@@ -1,0 +1,58 @@
+{% import '_includes/forms' as forms %}
+
+{% set volumes = craft.app.volumes.getAllVolumes() %}
+{% set myVolume = craft.app.volumes.getVolumeByHandle('files') %}
+{% set rootFolder = craft.app.assets.getRootFolderByVolumeId(myVolume.id) %}
+{% set foldersInRootFolder = craft.app.assets.getAllDescendantFolders(rootFolder) %}
+
+<h2>Transform PDF to Image</h2>
+
+<form method="POST">
+
+    {{ actionInput('') }}
+    {{ csrfInput() }}
+    
+    {% set options = [
+        { value: '', label: 'Select a folder' }
+    ] %}
+
+    {% for volume in volumes %}
+
+        {% set rootFolder = craft.app.assets.getRootFolderByVolumeId(volume.id) %}
+        {% set foldersInRootFolder = craft.app.assets.getAllDescendantFolders(rootFolder) %}
+
+        {% set volumeOptions = [
+            { optgroup: volume.name },
+            { value: volume.id, label: volume.name ~ ' (All assets/subfolders)' }
+        ] %}
+        
+        {% for folder in foldersInRootFolder %}
+            {% set volumeOptions = volumeOptions|merge([{ value: folder.id, label: folder.name }]) %}
+        {% endfor %}
+
+        {% set options = options|merge(volumeOptions) %}
+
+    {% endfor %}
+
+    {{ forms.selectField({
+        label: 'Volume',
+        name: 'volumeFolder',
+        options: options,
+        required: true
+    }) }}
+
+    {{ forms.checkboxField({
+        label: 'Index Keywords',
+        instructions: 'Grab keywords from the PDF\'s and index them in the database. Useful for using in search queries.',
+        id: 'indexKeywords',
+        name: 'indexKeywords',
+        value: 1
+    }) }}
+
+    <a 
+        class="btn submit formsubmit" 
+        data-action="pdf-transform/transform/transform-pdfs"
+    >
+       Transform
+    </a>
+</form>
