@@ -12,6 +12,8 @@ class TransformJob extends BaseJob
 
     public $assets;
     public $indexKeywords;
+    public $batch;
+    public $totalBatch;
 
     public function execute($queue): void
     {
@@ -36,6 +38,9 @@ class TransformJob extends BaseJob
 
     protected function defaultDescription(): string
     {
-        return Craft::t('pdf-transform', 'Transforming PDFs to images');
+        return Craft::t('pdf-transform', 'Transforming PDFs to images - {step, number} of {total, number}', [
+            'step' => $this->batch,
+            'total' => $this->totalBatch,
+        ]);
     }
 }

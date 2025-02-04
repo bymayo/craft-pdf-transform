@@ -290,12 +290,22 @@ class PdfTransformService extends Component
         throw new Exception('PDF Transform: No assets found in volume');
       }
 
-      $job = new TransformJob([
-        'assets' => $assets,
-        'indexKeywords' => $indexKeywords
-      ]);
+      $batchSize = Craft::$app->config->general->devMode ? 5 : 25;
+      $totalAssets = count($assets);
 
-      Queue::push($job);
+      for ($i = 0; $i < $totalAssets; $i += $batchSize) {
+
+          $batch = array_slice($assets, $i, $batchSize);
+
+          $job = new TransformJob([
+              'assets' => $batch,
+              'indexKeywords' => $indexKeywords,
+              'batch' => $i / $batchSize + 1,
+              'totalBatch' => ceil($totalAssets / $batchSize)
+          ]);
+
+          Queue::push($job);
+      }
 
     }
 

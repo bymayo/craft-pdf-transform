@@ -1,5 +1,10 @@
 # PDF Transform Changelog
 
+## 1.0.12 - 2025-01-06
+
+### Added
+- Batching to keyword jobs
+
 ## 1.0.11 - 2025-01-06
 
 ### Fixed
