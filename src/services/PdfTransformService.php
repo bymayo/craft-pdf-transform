@@ -113,57 +113,74 @@ class PdfTransformService extends Component
     public function pdfToImage($asset, $indexKeywords = false)
     {
 
+      if ($asset->kind != 'pdf') {
+        return false;
+      }
+
       $filename = $this->getFileName($asset);
       $volume = $this->getImageVolume();
 
-      // @TODO: Check if file exists in volume here, and check to see if if the dates match
-
       try {
 
-        $pathService = Craft::$app->getPath();
-        $tempPath = $pathService->getTempPath(true) . '/' . mt_rand(0, 9999999) . '.png';
-        file_put_contents($tempPath, file_get_contents($asset->url));
+        $assetTransformed = Asset::find()
+          ->volumeId($volume->id)
+          ->filename($filename)
+          ->one();
+
+        if (!$assetTransformed) {
+
+          $pathService = Craft::$app->getPath();
+          $tempPath = $pathService->getTempPath(true) . '/' . mt_rand(0, 9999999) . '.' . $this->settings->imageFormat;
+          file_put_contents($tempPath, file_get_contents($asset->url));
+    
+          $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
+    
+          $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
   
-        $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
+          $pdf = new Pdf($tempPath);
   
-        $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
-
-        $pdf = new Pdf($tempPath);
-
-        $pdf
-          ->setPage($this->settings->page)
-          ->setResolution($this->settings->imageResolution)
-          ->setCompressionQuality($this->settings->imageQuality)
-          ->saveImage($tempPathTransform);
-
-        $assetTransformed = new Asset();
-        $assetTransformed->tempFilePath = $tempPathTransform;
-        $assetTransformed->filename = $filename;
-        $assetTransformed->folderId = $folder->id;
-        $assetTransformed->newFolderId = $folder->id;
-        $assetTransformed->kind = 'Image';
-        $assetTransformed->title = $asset->title;
-        $assetTransformed->avoidFilenameConflicts = true;
-        $assetTransformed->setVolumeId($volume->id);
-        $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
-
-        $assetTransformed->validate();
-          
-        if (Craft::$app->getElements()->saveElement($assetTransformed, false))
-        {
-
-          if ($indexKeywords) 
+          $pdf
+            ->setPage($this->settings->page)
+            ->setResolution($this->settings->imageResolution)
+            ->setCompressionQuality($this->settings->imageQuality)
+            ->saveImage($tempPathTransform);
+  
+          $assetTransformed = new Asset();
+          $assetTransformed->tempFilePath = $tempPathTransform;
+          $assetTransformed->filename = $filename;
+          $assetTransformed->folderId = $folder->id;
+          $assetTransformed->newFolderId = $folder->id;
+          $assetTransformed->kind = 'Image';
+          $assetTransformed->title = $asset->title;
+          $assetTransformed->avoidFilenameConflicts = true;
+          $assetTransformed->setVolumeId($volume->id);
+          $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
+  
+          $assetTransformed->validate();
+            
+          if (!Craft::$app->getElements()->saveElement($assetTransformed, false))
           {
-            $this->indexKeywords($asset, $assetTransformed);
+  
+            PdfTransform::log($e->getMessage());
+            throw new Exception('PDF Transform: Could not transform PDF to image');
+  
           }
 
-          return $assetTransformed;
         }
+
+        if ($indexKeywords) 
+        {
+          $this->indexKeywords($asset, $assetTransformed);
+        }
+
+        return $assetTransformed;
 
       }  
       catch (Exception $e) {
+
         PdfTransform::log($e->getMessage());
         throw new Exception('PDF Transform: Could not transform PDF to image');
+
       }
 
     }

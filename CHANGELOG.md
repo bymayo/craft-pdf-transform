@@ -1,5 +1,10 @@
 # PDF Transform Changelog
 
+## 1.0.11 - 2025-01-06
+
+### Fixed
+- Keyword extraction failing if the asset was not a PDF
+
 ## 1.0.10 - 2025-01-06
 
 ### Added
