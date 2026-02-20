@@ -111,6 +111,12 @@ class PdfTransform extends Plugin
                 $asset = $event->element;
 
                if ($event->isNew && $asset->extension === 'pdf') {
+                  try {
+                    $asset->getStream();
+                  } catch (\Throwable $e) {
+                    PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': file not yet available.');
+                    return;
+                  }
                   PdfTransform::$plugin->pdfTransformService->pdfToImage($asset);
                }
 

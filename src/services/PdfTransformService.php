@@ -63,14 +63,20 @@ class PdfTransformService extends Component
    public function getImageFs()
    {
      $volume = $this->getImageVolume();
-     $fs = $volume->getFs();
-     return $fs;
+
+     if (!$volume) {
+       return null;
+     }
+
+     return $volume->getFs();
   }
 
    public function getFileName(Asset $asset): string
    {
-      // e.g. filename-12345.jpg
-      $basename = pathinfo($asset->filename, PATHINFO_FILENAME);
+      $basename = $this->settings->cleanFilenames
+        ? pathinfo($asset->filename, PATHINFO_FILENAME)
+        : $asset->filename;
+
       return $basename . '-' . $asset->id . '.' . $this->settings->imageFormat;
    }
 
@@ -82,10 +88,15 @@ class PdfTransformService extends Component
      }
 
      $volume = $this->getImageVolume();
-     $fs = $this->getImageFs();
+
+     if (!$volume) {
+       PdfTransform::log('Image volume not configured or not found.');
+       return null;
+     }
+
      $fileName = $this->getFileName($asset);
 
-     if ($fs->fileExists($fileName)) {
+     if ($volume->fileExists($fileName)) {
 
        $transformedAsset = Asset::find()
          ->volumeId($volume->id)
@@ -110,6 +121,11 @@ class PdfTransformService extends Component
 
      $filename = $this->getFileName($asset);
      $volume = $this->getImageVolume();
+
+     if (!$volume) {
+       PdfTransform::log('Image volume not configured or not found.');
+       return null;
+     }
 
      $pathService = Craft::$app->getPath();
      $tempPath = $pathService->getTempPath(true) . '/' . uniqid('pdf_', true) . '.pdf';

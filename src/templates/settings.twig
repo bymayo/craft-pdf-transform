@@ -41,6 +41,15 @@
     })
 }}
 
+{{ forms.lightswitchField({
+    label: 'Clean Filenames',
+    instructions: 'Strip the <code>.pdf</code> extension from generated filenames. e.g. <code>document-123.jpg</code> instead of <code>document.pdf-123.jpg</code>.',
+    id: 'cleanFilenames',
+    name: 'cleanFilenames',
+    on: settings['cleanFilenames']
+    })
+}}
+
 {{ forms.selectField({
     label: 'Image Format',
     id: 'imageFormat',

@@ -31,6 +31,7 @@ class Settings extends Model
     public $imageFormat = 'jpg';
     public $imageResolution = 72;
     public $imageQuality = 100;
+    public $cleanFilenames = false;
 
     // Public Methods
     // =========================================================================
@@ -42,7 +43,8 @@ class Settings extends Model
     {
         return [
             [['page', 'imageVolume', 'imageResolution', 'imageQuality'], 'integer'],
-            ['imageFormat', 'in', 'range' => ['jpg', 'png']]
+            ['imageFormat', 'in', 'range' => ['jpg', 'png']],
+            ['cleanFilenames', 'boolean']
         ];
     }
 }

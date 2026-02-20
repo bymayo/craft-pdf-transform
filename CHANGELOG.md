@@ -1,8 +1,16 @@
 # PDF Transform Changelog
 
+## 5.1.1 - 2026-02-20
+
+### Fixed
+- File existence check now uses volume path instead of filesystem path, fixing duplicate generation on volumes with subpaths ([#25](https://github.com/bymayo/craft-pdf-transform/issues/25))
+- Auto-transform on upload no longer crashes when the asset file is not yet available, fixing corrupt image headers ([#23](https://github.com/bymayo/craft-pdf-transform/issues/23))
+- Added null checks for image volume to prevent "getFs() on null" errors when volume is misconfigured ([#18](https://github.com/bymayo/craft-pdf-transform/issues/18))
+
 ## 5.1.0 - 2026-02-20
 
-> **Warning:** The filename format for transformed images has changed. Previously `document.pdf-123.jpg`, now `document-123.jpg`. Existing transformed images will be regenerated with the new format on next render. Old files can be manually removed from your output volume.
+### Added
+- New "Clean Filenames" setting to strip the `.pdf` extension from generated filenames (e.g. `document-123.jpg` instead of `document.pdf-123.jpg`). Disabled by default for backward compatibility.
 
 ### Fixed
 - PDF files are now read via Craft's filesystem API instead of HTTP requests, fixing SSRF risk
@@ -18,7 +26,6 @@
 
 ### Changed
 - `imageFormat` setting is now validated to only allow `jpg` or `png` values
-- Transformed image filenames no longer include the `.pdf` extension (e.g. `document-123.jpg` instead of `document.pdf-123.jpg`)
 
 ## 5.0.1 - 2024-05-30
 ### Changed
