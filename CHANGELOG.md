@@ -5,6 +5,8 @@
 > **Warning:** The filename format for transformed images has changed. Previously `document.pdf-123.jpg`, now `document-123.jpg`. Existing transformed images will be regenerated with the new format on next render. Old files can be manually removed from your output volume.
 
 ### Fixed
+- PDF files are now read via Craft's filesystem API instead of HTTP requests, fixing SSRF risk
+- `getVolumeOptions()` now uses `Craft::$app->getVolumes()` instead of instantiating an unconfigured `Volumes` service
 - Replaced predictable `mt_rand` temp filenames with `uniqid` to avoid collisions
 - Asset save event listener now only fires for assets instead of all element types
 - Temporary PDF files are now cleaned up after conversion to prevent disk space leaks

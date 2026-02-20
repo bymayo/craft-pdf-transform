@@ -12,9 +12,6 @@ use bymayo\pdftransform\PdfTransform;
 
 use Craft;
 use craft\base\Component;
-use craft\helpers\App;
-use Yii;
-use craft\services\Volumes;
 use Spatie\PdfToImage\Pdf;
 use craft\elements\Asset;
 
@@ -31,19 +28,19 @@ class PdfTransformService extends Component
     // Public Methods
     // =========================================================================
 
-    public function __construct() {
+    public function init(): void {
 
+      parent::init();
       $this->settings = PdfTransform::$plugin->getSettings();
-      
+
     }
 
     public function getVolumeOptions()
     {
 
       $volumesArray = array();
-      $volumes = new Volumes;
 
-      foreach ($volumes->getAllVolumes() as $volume) {
+      foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
 
         $volumeArray = array();
         $volumeArray['label'] = $volume->name;
@@ -115,8 +112,12 @@ class PdfTransformService extends Component
      $volume = $this->getImageVolume();
 
      $pathService = Craft::$app->getPath();
-     $tempPath = $pathService->getTempPath(true) . '/' . uniqid('pdf_', true) . '.png';
-     file_put_contents($tempPath, file_get_contents($asset->url));
+     $tempPath = $pathService->getTempPath(true) . '/' . uniqid('pdf_', true) . '.pdf';
+     $stream = $asset->getStream();
+     file_put_contents($tempPath, $stream);
+     if (is_resource($stream)) {
+       fclose($stream);
+     }
 
      $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
 
