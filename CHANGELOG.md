@@ -1,12 +1,5 @@
 # PDF Transform Changelog
 
-## 5.1.1 - 2026-02-20
-
-### Fixed
-- File existence check now uses volume path instead of filesystem path, fixing duplicate generation on volumes with subpaths ([#25](https://github.com/bymayo/craft-pdf-transform/issues/25))
-- Auto-transform on upload no longer crashes when the asset file is not yet available, fixing corrupt image headers ([#23](https://github.com/bymayo/craft-pdf-transform/issues/23))
-- Added null checks for image volume to prevent "getFs() on null" errors when volume is misconfigured ([#18](https://github.com/bymayo/craft-pdf-transform/issues/18))
-
 ## 5.1.0 - 2026-02-20
 
 ### Added
@@ -23,6 +16,9 @@
 - `url()` Twig variable now returns `null` explicitly when no render is available
 - Added `?Asset` type hints and null guards to `render()` and `url()` methods
 - Removed empty CSS/JS asset bundle files that caused unnecessary HTTP requests
+- File existence check now uses volume path instead of filesystem path, fixing duplicate generation on volumes with subpaths ([#25](https://github.com/bymayo/craft-pdf-transform/issues/25))
+- Auto-transform on upload no longer crashes when the asset file is not yet available, fixing corrupt image headers ([#23](https://github.com/bymayo/craft-pdf-transform/issues/23))
+- Added null checks for image volume to prevent "getFs() on null" errors when volume is misconfigured ([#18](https://github.com/bymayo/craft-pdf-transform/issues/18))
 
 ### Changed
 - `imageFormat` setting is now validated to only allow `jpg` or `png` values

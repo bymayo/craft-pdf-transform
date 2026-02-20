@@ -43,7 +43,7 @@
 
 {{ forms.lightswitchField({
     label: 'Clean Filenames',
-    instructions: 'Strip the <code>.pdf</code> extension from generated filenames. e.g. <code>document-123.jpg</code> instead of <code>document.pdf-123.jpg</code>.',
+    instructions: 'Remove <code>.pdf</code> from output filenames. Enabling this will regenerate existing files on next render.',
     id: 'cleanFilenames',
     name: 'cleanFilenames',
     on: settings['cleanFilenames']
