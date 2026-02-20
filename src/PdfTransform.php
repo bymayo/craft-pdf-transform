@@ -15,7 +15,7 @@ use bymayo\pdftransform\models\Settings;
 use Craft;
 use craft\base\Plugin;
 use craft\services\Plugins;
-use craft\services\Elements;
+use craft\elements\Asset;
 use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
 
@@ -104,16 +104,14 @@ class PdfTransform extends Plugin
         );
 
         Event::on(
-            Elements::class,
-            Elements::EVENT_AFTER_SAVE_ELEMENT,
+            Asset::class,
+            Asset::EVENT_AFTER_SAVE,
             function(ElementEvent $event) {
 
-                $element = $event->element;
+                $asset = $event->element;
 
-               if ($element instanceof \craft\elements\Asset) {
-                  if ($event->isNew && $element->extension === 'pdf') {
-                    PdfTransform::$plugin->pdfTransformService->pdfToImage($element);
-                 }
+               if ($event->isNew && $asset->extension === 'pdf') {
+                  PdfTransform::$plugin->pdfTransformService->pdfToImage($asset);
                }
 
             }

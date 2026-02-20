@@ -115,20 +115,28 @@ class PdfTransformService extends Component
      $volume = $this->getImageVolume();
 
      $pathService = Craft::$app->getPath();
-     $tempPath = $pathService->getTempPath(true) . '/' . mt_rand(0, 9999999) . '.png';
+     $tempPath = $pathService->getTempPath(true) . '/' . uniqid('pdf_', true) . '.png';
      file_put_contents($tempPath, file_get_contents($asset->url));
 
      $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
 
-     $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+     try {
 
-     $pdf = new Pdf($tempPath);
+       $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
 
-     $pdf
-       ->setPage($this->settings->page)
-       ->setResolution($this->settings->imageResolution)
-       ->setCompressionQuality($this->settings->imageQuality)
-       ->saveImage($tempPathTransform);
+       $pdf = new Pdf($tempPath);
+
+       $pdf
+         ->setPage($this->settings->page)
+         ->setResolution($this->settings->imageResolution)
+         ->setCompressionQuality($this->settings->imageQuality)
+         ->saveImage($tempPathTransform);
+
+     } catch (\Throwable $e) {
+       @unlink($tempPath);
+       PdfTransform::log('PDF conversion failed for asset #' . $asset->id . ': ' . $e->getMessage());
+       return null;
+     }
 
      @unlink($tempPath);
 
@@ -143,12 +151,14 @@ class PdfTransformService extends Component
      $assetTransformed->setVolumeId($volume->id);
      $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
 
-     $assetTransformed->validate();
+     if (!$assetTransformed->validate()) {
+       PdfTransform::log('Asset validation failed for "' . $filename . '": ' . implode(', ', $assetTransformed->getFirstErrors()));
+       return null;
+     }
 
-       if (Craft::$app->getElements()->saveElement($assetTransformed, false))
-       {
-         return $assetTransformed;
-       }
+     if (Craft::$app->getElements()->saveElement($assetTransformed, false)) {
+       return $assetTransformed;
+     }
 
      return null;
 

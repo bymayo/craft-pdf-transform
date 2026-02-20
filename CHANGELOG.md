@@ -1,10 +1,12 @@
 # PDF Transform Changelog
 
-## 5.0.2 - 2026-02-20
+## 5.1.0 - 2026-02-20
 
 > **Warning:** The filename format for transformed images has changed. Previously `document.pdf-123.jpg`, now `document-123.jpg`. Existing transformed images will be regenerated with the new format on next render. Old files can be manually removed from your output volume.
 
 ### Fixed
+- Replaced predictable `mt_rand` temp filenames with `uniqid` to avoid collisions
+- Asset save event listener now only fires for assets instead of all element types
 - Temporary PDF files are now cleaned up after conversion to prevent disk space leaks
 - `render()` now re-creates the image asset if the file exists on disk but the asset record is missing
 - `pdfToImage()` now returns `null` explicitly on failure instead of returning void
