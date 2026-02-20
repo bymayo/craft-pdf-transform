@@ -70,28 +70,36 @@ class PdfTransformService extends Component
      return $fs;
   }
 
-   public function getFileName($asset)
+   public function getFileName(Asset $asset): string
    {
       // e.g. filename-12345.jpg
-      return $asset->filename . '-' . $asset->id . '.' . $this->settings->imageFormat;
+      $basename = pathinfo($asset->filename, PATHINFO_FILENAME);
+      return $basename . '-' . $asset->id . '.' . $this->settings->imageFormat;
    }
 
-   public function render($asset)
+   public function render(?Asset $asset): ?Asset
    {
 
-    $volume = $this->getImageVolume();
+     if (!$asset) {
+       return null;
+     }
+
+     $volume = $this->getImageVolume();
      $fs = $this->getImageFs();
      $fileName = $this->getFileName($asset);
 
      if ($fs->fileExists($fileName)) {
-       
+
        $transformedAsset = Asset::find()
          ->volumeId($volume->id)
          ->filename($fileName)
          ->one();
 
-       return $transformedAsset;
+       if ($transformedAsset) {
+         return $transformedAsset;
+       }
 
+       // File exists on disk but asset record is missing — re-create it
      }
 
      return $this->pdfToImage(
@@ -100,7 +108,7 @@ class PdfTransformService extends Component
 
    }
 
-   public function pdfToImage($asset)
+   public function pdfToImage(Asset $asset): ?Asset
    {
 
      $filename = $this->getFileName($asset);
@@ -122,6 +130,8 @@ class PdfTransformService extends Component
        ->setCompressionQuality($this->settings->imageQuality)
        ->saveImage($tempPathTransform);
 
+     @unlink($tempPath);
+
      $assetTransformed = new Asset();
      $assetTransformed->tempFilePath = $tempPathTransform;
      $assetTransformed->filename = $filename;
@@ -134,12 +144,13 @@ class PdfTransformService extends Component
      $assetTransformed->setScenario(Asset::SCENARIO_CREATE);
 
      $assetTransformed->validate();
-       
+
        if (Craft::$app->getElements()->saveElement($assetTransformed, false))
        {
          return $assetTransformed;
        }
 
+     return null;
 
    }
 

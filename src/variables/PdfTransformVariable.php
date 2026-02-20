@@ -26,12 +26,12 @@ class PdfTransformVariable
      * @param null $optional
      * @return string
      */
-    public function render($asset)
+    public function render(?\craft\elements\Asset $asset): ?\craft\elements\Asset
     {
         return PdfTransform::$plugin->pdfTransformService->render($asset);
     }
 
-    public function url($asset)
+    public function url(?\craft\elements\Asset $asset): ?string
     {
 
         $render = PdfTransform::$plugin->pdfTransformService->render($asset);
@@ -39,6 +39,8 @@ class PdfTransformVariable
         if ($render) {
             return $render->getUrl();
         }
+
+        return null;
 
     }
 }

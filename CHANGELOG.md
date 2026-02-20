@@ -1,5 +1,21 @@
 # PDF Transform Changelog
 
+## 5.0.2 - 2026-02-20
+
+> **Warning:** The filename format for transformed images has changed. Previously `document.pdf-123.jpg`, now `document-123.jpg`. Existing transformed images will be regenerated with the new format on next render. Old files can be manually removed from your output volume.
+
+### Fixed
+- Temporary PDF files are now cleaned up after conversion to prevent disk space leaks
+- `render()` now re-creates the image asset if the file exists on disk but the asset record is missing
+- `pdfToImage()` now returns `null` explicitly on failure instead of returning void
+- `url()` Twig variable now returns `null` explicitly when no render is available
+- Added `?Asset` type hints and null guards to `render()` and `url()` methods
+- Removed empty CSS/JS asset bundle files that caused unnecessary HTTP requests
+
+### Changed
+- `imageFormat` setting is now validated to only allow `jpg` or `png` values
+- Transformed image filenames no longer include the `.pdf` extension (e.g. `document-123.jpg` instead of `document.pdf-123.jpg`)
+
 ## 5.0.1 - 2024-05-30
 ### Changed
 - Icon to a new shiny (literally) icon

@@ -33,14 +33,6 @@ class PdfTransformAsset extends AssetBundle
             CpAsset::class,
         ];
 
-        $this->js = [
-            'js/PdfTransform.js',
-        ];
-
-        $this->css = [
-            'css/PdfTransform.css',
-        ];
-
         parent::init();
     }
 }

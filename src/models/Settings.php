@@ -42,7 +42,7 @@ class Settings extends Model
     {
         return [
             [['page', 'imageVolume', 'imageResolution', 'imageQuality'], 'integer'],
-            ['imageFormat', 'string']
+            ['imageFormat', 'in', 'range' => ['jpg', 'png']]
         ];
     }
 }

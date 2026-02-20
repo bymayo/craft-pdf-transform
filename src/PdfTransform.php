@@ -19,6 +19,7 @@ use craft\services\Elements;
 use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
 
+use craft\events\ElementEvent;
 use yii\base\Event;
 use yii\log\FileTarget;
 
@@ -105,13 +106,12 @@ class PdfTransform extends Plugin
         Event::on(
             Elements::class,
             Elements::EVENT_AFTER_SAVE_ELEMENT,
-            function(Event $event)   {
+            function(ElementEvent $event) {
 
                 $element = $event->element;
 
                if ($element instanceof \craft\elements\Asset) {
                   if ($event->isNew && $element->extension === 'pdf') {
-                    // @TODO: trigger the imageToPdf function
                     PdfTransform::$plugin->pdfTransformService->pdfToImage($element);
                  }
                }
