@@ -11,6 +11,8 @@ A use case for this is to show the preview of a PDF before a user downloads that
 - PDF's are transformed to an image when PDF's are uploaded via Assets or Asset fields.
 - Transformed PDF images are indexed and available in Assets like all other asset elements.
 - Works with local asset volumes, Amazon S3 and Servd.
+- Control where generated images are placed (volume root, subfolder, or mirror source path).
+- Restrict auto-transform to specific source volumes.
 
 ## Install
 
@@ -23,10 +25,12 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 ## Requirements
 
 - Craft CMS 5.x
-- Imagick / Ghostscript 
+- Imagick / Ghostscript
 - MySQL (No PostgreSQL support)
 
 ## Configuration
+
+All settings can be configured from the plugin settings page in the Control Panel, or via a `config/pdf-transform.php` config file.
 
 <table>
 	<tr>
@@ -36,30 +40,78 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 	</tr>
 	<tr>
 		<td>Page Number</td>
-    <td>1</td>
-    <td>Set with page should in the PDF should be converted to an image.</td>
+    <td><code>1</code></td>
+    <td>Set which page in the PDF should be converted to an image.</td>
 	</tr>
   <tr>
 		<td>Image Volume</td>
-    <td>null</td>
-    <td>Choose where converted images should be stored.</td>
+    <td><code>null</code></td>
+    <td>Choose which volume converted images should be stored in.</td>
+	</tr>
+  <tr>
+		<td>Output Destination</td>
+    <td><code>root</code></td>
+    <td>Where within the output volume to place generated images. Options: <code>root</code> (volume root), <code>subfolder</code> (static subfolder), <code>mirror</code> (mirror the source PDF's folder path).</td>
+	</tr>
+  <tr>
+		<td>Subfolder Name</td>
+    <td><code>''</code></td>
+    <td>When Output Destination is set to <code>subfolder</code>, the name of the subfolder to place images in (e.g. <code>thumbnails</code>).</td>
 	</tr>
   <tr>
 		<td>Image Resolution</td>
-    <td>72</td>
+    <td><code>72</code></td>
     <td>Set the resolution of the converted image.</td>
 	</tr>
   <tr>
-		<td>Image Format</td>
-    <td>jpg</td>
-    <td>Set the file format of the converted image.</td>
-	</tr>
-  <tr>
 		<td>Image Quality</td>
-    <td>100</td>
+    <td><code>100</code></td>
     <td>Set the image quality of the converted image.</td>
 	</tr>
+  <tr>
+		<td>Clean Filenames</td>
+    <td><code>false</code></td>
+    <td>Remove <code>.pdf</code> from output filenames (e.g. <code>document-123.jpg</code> instead of <code>document.pdf-123.jpg</code>).</td>
+	</tr>
+  <tr>
+		<td>Colour Space</td>
+    <td><code>srgb</code></td>
+    <td>Colour space for the converted image. Options: <code>srgb</code>, <code>rgb</code>, <code>cmyk</code>, <code>gray</code>, <code>none</code>. sRGB fixes inverted colours on CMYK PDFs.</td>
+	</tr>
+  <tr>
+		<td>Image Format</td>
+    <td><code>jpg</code></td>
+    <td>Set the file format of the converted image. Options: <code>jpg</code>, <code>png</code>.</td>
+	</tr>
+  <tr>
+		<td>Source Volumes</td>
+    <td><code>['*']</code></td>
+    <td>Which volumes trigger auto-transform when a PDF is uploaded. Set to <code>['*']</code> for all volumes, or an array of volume IDs. This does not affect the <code>craft.pdfTransform.render()</code> Twig method.</td>
+	</tr>
 </table>
+
+### Config File
+
+You can override plugin settings by creating a `config/pdf-transform.php` file in your Craft project:
+
+```php
+<?php
+
+return [
+    'page' => 1,
+    'imageVolume' => null,
+    'imageDestination' => 'root',
+    'imageSubfolder' => '',
+    'imageFormat' => 'jpg',
+    'imageResolution' => 72,
+    'imageQuality' => 100,
+    'cleanFilenames' => false,
+    'imageColorspace' => 'srgb',
+    'sourceVolumes' => ['*'],
+];
+```
+
+This supports Craft's [multi-environment config](https://craftcms.com/docs/5.x/configure.html#multi-environment-configs) format.
 
 ## Templating
 
@@ -70,10 +122,10 @@ To transform a PDF to an image use the following Twig tag:
 
 {% set transformedPdf = craft.pdfTransform.render(pdfToTransform) %}
 
-{{ transformedPdf.one().url }}
+{{ transformedPdf.url }}
 ```
 
-The transformed PDF (Now an image stored in Assets) can then be output using `{{ transformedPdf.one().url }}`. Or get any Asset property e.g. `title`, `id`, `filename` etc.
+The transformed PDF (Now an image stored in Assets) can then be output using `{{ transformedPdf.url }}`. Or get any Asset property e.g. `title`, `id`, `filename` etc.
 
 If the transformed image doesn't exist then the PDF will be transformed via the template. This may cause the template/page to become slow whilst the PDF is transformed.
 
@@ -89,7 +141,7 @@ Read more about this issue - <https://github.com/spatie/pdf-to-image#issues-rega
 
 ### Dimensions
 
-PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set width and height dimensions (Other than Image Resolution). 
+PDF Transform does the basic job of converting your PDF to a single image. It will never be it's role to set width and height dimensions (Other than Image Resolution).
 
 I'd recommend running the PDF image through one of the following options/plugins and setting the dimensions that way (Some of these also handle caching the image as well)
 
@@ -100,8 +152,3 @@ I'd recommend running the PDF image through one of the following options/plugins
 ## Support
 
 If you have any issues (Surely not!) then I'll aim to reply to these as soon as possible. If it's a site-breaking-oh-no-what-has-happened moment, then hit me up on the Craft CMS Discord - @bymayo
-
-## Roadmap
-
-- Optional variables (E.g. page, resolution etc)
-- When PDF assets are updated, ensure old transformed image is removed.
