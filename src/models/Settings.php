@@ -33,6 +33,9 @@ class Settings extends Model
     public $imageQuality = 100;
     public $cleanFilenames = false;
     public $imageColorspace = 'srgb';
+    public $imageDestination = 'root';
+    public $imageSubfolder = '';
+    public $sourceVolumes = ['*'];
 
     // Public Methods
     // =========================================================================
@@ -46,7 +49,10 @@ class Settings extends Model
             [['page', 'imageVolume', 'imageResolution', 'imageQuality'], 'integer'],
             ['imageFormat', 'in', 'range' => ['jpg', 'png']],
             ['cleanFilenames', 'boolean'],
-            ['imageColorspace', 'in', 'range' => ['none', 'srgb', 'rgb', 'cmyk', 'gray']]
+            ['imageColorspace', 'in', 'range' => ['none', 'srgb', 'rgb', 'cmyk', 'gray']],
+            ['imageDestination', 'in', 'range' => ['root', 'subfolder', 'mirror']],
+            ['imageSubfolder', 'string'],
+            ['sourceVolumes', 'each', 'rule' => ['string']],
         ];
     }
 }

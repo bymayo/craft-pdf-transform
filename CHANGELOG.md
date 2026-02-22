@@ -1,5 +1,12 @@
 # PDF Transform Changelog
 
+## 5.2.0 - 2026-02-22
+
+### Added
+- New "Output Destination" setting to control where generated images are placed: Volume Root (default), Subfolder, or Mirror Source Path ([#4](https://github.com/bymayo/craft-pdf-transform/issues/4))
+- New "Subfolder Name" setting for specifying a static subfolder when using the Subfolder destination mode
+- New "Auto-Transform Source Volumes" setting to restrict which volumes trigger auto-transform on PDF upload ([#30](https://github.com/bymayo/craft-pdf-transform/issues/30))
+
 ## 5.1.0 - 2026-02-20
 
 ### Added

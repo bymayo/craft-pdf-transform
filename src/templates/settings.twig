@@ -23,6 +23,41 @@
     })
 }}
 
+{{ forms.selectField({
+    label: 'Output Destination',
+    instructions: 'Where within the output volume to place generated images.',
+    id: 'imageDestination',
+    name: 'imageDestination',
+    value: settings['imageDestination'],
+    required: true,
+    options: [
+      {
+        'label': 'Volume Root (Default)',
+        'value': 'root'
+      },
+      {
+        'label': 'Subfolder',
+        'value': 'subfolder'
+      },
+      {
+        'label': 'Mirror Source Path',
+        'value': 'mirror'
+      }
+    ]
+    })
+}}
+
+<div id="{{ 'imageSubfolder-wrapper'|namespaceInputId }}"{% if settings['imageDestination'] != 'subfolder' %} class="hidden"{% endif %}>
+  {{ forms.textField({
+      label: 'Subfolder Name',
+      instructions: 'The subfolder within the output volume to place generated images (e.g. <code>thumbnails</code>).',
+      id: 'imageSubfolder',
+      name: 'imageSubfolder',
+      value: settings['imageSubfolder']
+      })
+  }}
+</div>
+
 {{ forms.textField({
     label: 'Image Resolution',
     id: 'imageResolution',
@@ -100,3 +135,32 @@
     ]
     })
 }}
+
+<hr>
+
+{{ forms.checkboxSelectField({
+    label: 'Auto-Transform Source Volumes',
+    instructions: 'Select which volumes trigger auto-transform when a PDF is uploaded.',
+    id: 'sourceVolumes',
+    name: 'sourceVolumes',
+    values: settings['sourceVolumes'],
+    options: volumes,
+    showAllOption: true
+    })
+}}
+
+{% js %}
+(function() {
+  var destinationSelect = document.getElementById('{{ "imageDestination"|namespaceInputId }}');
+  var subfolderWrapper = document.getElementById('{{ "imageSubfolder-wrapper"|namespaceInputId }}');
+  if (destinationSelect && subfolderWrapper) {
+    destinationSelect.addEventListener('change', function() {
+      if (this.value === 'subfolder') {
+        subfolderWrapper.classList.remove('hidden');
+      } else {
+        subfolderWrapper.classList.add('hidden');
+      }
+    });
+  }
+})();
+{% endjs %}

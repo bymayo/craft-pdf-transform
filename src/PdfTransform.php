@@ -111,6 +111,17 @@ class PdfTransform extends Plugin
                 $asset = $event->sender;
 
                if ($event->isNew && $asset->extension === 'pdf') {
+
+                  $sourceVolumes = $this->getSettings()->sourceVolumes;
+
+                  if (!in_array('*', $sourceVolumes)) {
+                    $assetVolumeId = (string) $asset->getVolumeId();
+                    if (!in_array($assetVolumeId, $sourceVolumes)) {
+                      PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': volume not in allowed source volumes.');
+                      return;
+                    }
+                  }
+
                   try {
                     $asset->getStream();
                   } catch (\Throwable $e) {

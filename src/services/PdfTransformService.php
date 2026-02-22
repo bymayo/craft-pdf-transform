@@ -12,6 +12,7 @@ use bymayo\pdftransform\PdfTransform;
 
 use Craft;
 use craft\base\Component;
+use craft\models\VolumeFolder;
 use Spatie\PdfToImage\Pdf;
 use craft\elements\Asset;
 
@@ -75,6 +76,42 @@ class PdfTransformService extends Component
      return $volume->getFs();
   }
 
+   public function getDestinationFolder(Asset $asset): ?VolumeFolder
+   {
+     $volume = $this->getImageVolume();
+
+     if (!$volume) {
+       return null;
+     }
+
+     $rootFolder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+
+     if (!$rootFolder) {
+       return null;
+     }
+
+     $destination = $this->settings->imageDestination;
+
+     if ($destination === 'subfolder') {
+       $subfolder = trim($this->settings->imageSubfolder, '/');
+       if ($subfolder === '') {
+         return $rootFolder;
+       }
+       return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subfolder . '/', $volume);
+     }
+
+     if ($destination === 'mirror') {
+       $sourceFolder = $asset->getFolder();
+       $sourcePath = $sourceFolder ? $sourceFolder->path : '';
+       if ($sourcePath === '' || $sourcePath === null) {
+         return $rootFolder;
+       }
+       return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($sourcePath, $volume);
+     }
+
+     return $rootFolder;
+   }
+
    public function getFileName(Asset $asset): string
    {
       $basename = $this->settings->cleanFilenames
@@ -99,11 +136,20 @@ class PdfTransformService extends Component
      }
 
      $fileName = $this->getFileName($asset);
+     $folder = $this->getDestinationFolder($asset);
 
-     if ($volume->fileExists($fileName)) {
+     if (!$folder) {
+       PdfTransform::log('Destination folder could not be resolved.');
+       return null;
+     }
+
+     $filePath = ($folder->path ?? '') . $fileName;
+
+     if ($volume->fileExists($filePath)) {
 
        $transformedAsset = Asset::find()
          ->volumeId($volume->id)
+         ->folderId($folder->id)
          ->filename($fileName)
          ->one();
 
@@ -141,11 +187,11 @@ class PdfTransformService extends Component
 
      $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
 
-     $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+     $folder = $this->getDestinationFolder($asset);
 
      if (!$folder) {
        @unlink($tempPath);
-       PdfTransform::log('Root folder not found for volume #' . $volume->id);
+       PdfTransform::log('Destination folder could not be resolved for volume #' . $volume->id);
        return null;
      }
 
