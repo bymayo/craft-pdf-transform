@@ -47,7 +47,7 @@
     })
 }}
 
-<div id="{{ 'imageSubfolder-wrapper'|namespaceInputId }}"{% if settings['imageDestination'] != 'subfolder' %} class="hidden"{% endif %}>
+<div class="js-subfolder-toggle{% if settings['imageDestination'] != 'subfolder' %} hidden{% endif %}">
   {{ forms.textField({
       label: 'Subfolder Name',
       instructions: 'The subfolder within the output volume to place generated images (e.g. <code>thumbnails</code>).',
@@ -140,7 +140,7 @@
 
 {{ forms.checkboxSelectField({
     label: 'Auto-Transform Source Volumes',
-    instructions: 'Select which volumes trigger auto-transform when a PDF is uploaded.',
+    instructions: 'Select which volumes trigger auto-transform when a PDF is uploaded. This does not affect the <code>craft.pdfTransform.render()</code> Twig method.',
     id: 'sourceVolumes',
     name: 'sourceVolumes',
     values: settings['sourceVolumes'],
@@ -151,8 +151,8 @@
 
 {% js %}
 (function() {
-  var destinationSelect = document.getElementById('{{ "imageDestination"|namespaceInputId }}');
-  var subfolderWrapper = document.getElementById('{{ "imageSubfolder-wrapper"|namespaceInputId }}');
+  var destinationSelect = document.querySelector('select[name$="[imageDestination]"]');
+  var subfolderWrapper = document.querySelector('.js-subfolder-toggle');
   if (destinationSelect && subfolderWrapper) {
     destinationSelect.addEventListener('change', function() {
       if (this.value === 'subfolder') {
