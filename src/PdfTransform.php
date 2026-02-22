@@ -19,7 +19,7 @@ use craft\elements\Asset;
 use craft\events\PluginEvent;
 use craft\web\twig\variables\CraftVariable;
 
-use craft\events\ElementEvent;
+use craft\events\ModelEvent;
 use yii\base\Event;
 use yii\log\FileTarget;
 
@@ -106,9 +106,9 @@ class PdfTransform extends Plugin
         Event::on(
             Asset::class,
             Asset::EVENT_AFTER_SAVE,
-            function(ElementEvent $event) {
+            function(ModelEvent $event) {
 
-                $asset = $event->element;
+                $asset = $event->sender;
 
                if ($event->isNew && $asset->extension === 'pdf') {
                   try {

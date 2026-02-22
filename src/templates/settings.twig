@@ -51,6 +51,38 @@
 }}
 
 {{ forms.selectField({
+    label: 'Colour Space',
+    instructions: 'sRGB fixes inverted colours on CMYK PDFs.',
+    id: 'imageColorspace',
+    name: 'imageColorspace',
+    value: settings['imageColorspace'],
+    required: true,
+    options: [
+      {
+        'label': 'sRGB (Recommended)',
+        'value': 'srgb'
+      },
+      {
+        'label': 'RGB',
+        'value': 'rgb'
+      },
+      {
+        'label': 'CMYK',
+        'value': 'cmyk'
+      },
+      {
+        'label': 'Grayscale',
+        'value': 'gray'
+      },
+      {
+        'label': 'None',
+        'value': 'none'
+      }
+    ]
+    })
+}}
+
+{{ forms.selectField({
     label: 'Image Format',
     id: 'imageFormat',
     name: 'imageFormat',

@@ -32,6 +32,7 @@ class Settings extends Model
     public $imageResolution = 72;
     public $imageQuality = 100;
     public $cleanFilenames = false;
+    public $imageColorspace = 'srgb';
 
     // Public Methods
     // =========================================================================
@@ -44,7 +45,8 @@ class Settings extends Model
         return [
             [['page', 'imageVolume', 'imageResolution', 'imageQuality'], 'integer'],
             ['imageFormat', 'in', 'range' => ['jpg', 'png']],
-            ['cleanFilenames', 'boolean']
+            ['cleanFilenames', 'boolean'],
+            ['imageColorspace', 'in', 'range' => ['none', 'srgb', 'rgb', 'cmyk', 'gray']]
         ];
     }
 }

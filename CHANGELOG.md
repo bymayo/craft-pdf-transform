@@ -4,6 +4,7 @@
 
 ### Added
 - New "Clean Filenames" setting to strip the `.pdf` extension from generated filenames (e.g. `document-123.jpg` instead of `document.pdf-123.jpg`). Disabled by default for backward compatibility.
+- New "Colour Space" setting with sRGB (default), RGB, CMYK, Grayscale and None options. Fixes inverted colours on CMYK PDFs ([#24](https://github.com/bymayo/craft-pdf-transform/issues/24))
 
 ### Fixed
 - PDF files are now read via Craft's filesystem API instead of HTTP requests, fixing SSRF risk

@@ -56,8 +56,12 @@ class PdfTransformService extends Component
     public function getImageVolume()
     {
       $imageVolumeId = $this->settings->imageVolume;
-      $volume = Craft::$app->getVolumes()->getVolumeById($imageVolumeId);
-      return $volume;
+
+      if (!$imageVolumeId) {
+        return null;
+      }
+
+      return Craft::$app->getVolumes()->getVolumeById($imageVolumeId);
    }
 
    public function getImageFs()
@@ -137,11 +141,30 @@ class PdfTransformService extends Component
 
      $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
 
+     $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
+
+     if (!$folder) {
+       @unlink($tempPath);
+       PdfTransform::log('Root folder not found for volume #' . $volume->id);
+       return null;
+     }
+
      try {
 
-       $folder = Craft::$app->getAssets()->getRootFolderByVolumeId($volume->id);
-
        $pdf = new Pdf($tempPath);
+
+       $colorspaceMap = [
+         'srgb' => \Imagick::COLORSPACE_SRGB,
+         'rgb' => \Imagick::COLORSPACE_RGB,
+         'cmyk' => \Imagick::COLORSPACE_CMYK,
+         'gray' => \Imagick::COLORSPACE_GRAY,
+       ];
+
+       $colorspace = $this->settings->imageColorspace;
+
+       if ($colorspace !== 'none' && isset($colorspaceMap[$colorspace])) {
+         $pdf->setColorspace($colorspaceMap[$colorspace]);
+       }
 
        $pdf
          ->setPage($this->settings->page)
@@ -160,8 +183,7 @@ class PdfTransformService extends Component
      $assetTransformed = new Asset();
      $assetTransformed->tempFilePath = $tempPathTransform;
      $assetTransformed->filename = $filename;
-     $assetTransformed->folderId = $folder->id;
-     $assetTransformed->newFolderId = $folder->id;
+     $assetTransformed->newLocation = "{folder:" . $folder->id . "}" . $filename;
      $assetTransformed->kind = 'Image';
      $assetTransformed->title = $asset->title;
      $assetTransformed->avoidFilenameConflicts = true;
