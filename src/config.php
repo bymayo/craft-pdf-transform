@@ -24,7 +24,7 @@ return [
     // The page number in the PDF to convert to an image.
     'page' => 1,
 
-    // The volume ID where converted images are stored.
+    // The volume UID (or legacy volume ID) where converted images are stored.
     'imageVolume' => null,
 
     // Where within the output volume to place generated images.
@@ -51,6 +51,6 @@ return [
     'imageColorspace' => 'srgb',
 
     // Which volumes trigger auto-transform on PDF upload.
-    // Set to ['*'] for all volumes, or an array of volume IDs e.g. [1, 2]
+    // Set to ['*'] for all volumes, or an array of volume UIDs (or legacy volume IDs).
     'sourceVolumes' => ['*'],
 ];

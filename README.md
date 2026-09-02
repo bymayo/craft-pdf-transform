@@ -46,7 +46,7 @@ All settings can be configured from the plugin settings page in the Control Pane
   <tr>
 		<td>Image Volume</td>
     <td><code>null</code></td>
-    <td>Choose which volume converted images should be stored in.</td>
+    <td>Choose which volume converted images should be stored in. Stored as a volume UID, so it survives deploys.</td>
 	</tr>
   <tr>
 		<td>Output Destination</td>
@@ -86,7 +86,7 @@ All settings can be configured from the plugin settings page in the Control Pane
   <tr>
 		<td>Source Volumes</td>
     <td><code>['*']</code></td>
-    <td>Which volumes trigger auto-transform when a PDF is uploaded. Set to <code>['*']</code> for all volumes, or an array of volume IDs. This does not affect the <code>craft.pdfTransform.render()</code> Twig method.</td>
+    <td>Which volumes trigger auto-transform when a PDF is uploaded. Set to <code>['*']</code> for all volumes, or an array of volume UIDs. This does not affect the <code>craft.pdfTransform.render()</code> Twig method.</td>
 	</tr>
 </table>
 
@@ -111,25 +111,43 @@ return [
 ];
 ```
 
+`imageVolume` and `sourceVolumes` accept volume UIDs or IDs.
+
 This supports Craft's [multi-environment config](https://craftcms.com/docs/5.x/configure.html#multi-environment-configs) format.
 
 ## Templating
 
 To transform a PDF to an image use the following Twig tag:
 
-```
+```twig
 {% set pdfToTransform = entry.pdfAsset.one() %}
 
 {% set transformedPdf = craft.pdfTransform.render(pdfToTransform) %}
 
-{{ transformedPdf.url }}
+{% if transformedPdf %}
+    <img src="{{ transformedPdf.url }}">
+{% endif %}
 ```
 
 The transformed PDF (Now an image stored in Assets) can then be output using `{{ transformedPdf.url }}`. Or get any Asset property e.g. `title`, `id`, `filename` etc.
 
+`render()` returns `null` if the PDF can't be converted, so always guard it with `{% if %}` as above — unguarded, Twig throws and the page fails to render.
+
 If the transformed image doesn't exist then the PDF will be transformed via the template. This may cause the template/page to become slow whilst the PDF is transformed.
 
 Be aware that this also may output a large image, so we'd recommend running this through an image transform. See <a href="#dimensions">Dimensions</a>.
+
+## Troubleshooting
+
+### It works locally but not on the server
+
+Check the **Status** panel at the bottom of the plugin settings. It converts a test PDF and reports what's missing.
+
+It runs in the web process on purpose — `php -m` over SSH tests the CLI SAPI, which is often configured differently to PHP-FPM.
+
+### Nothing appears to happen
+
+Failures are logged to `storage/logs/pdfTransform.log` and Craft's `web.log`. If `render()` returns `null`, the log says why.
 
 ## Known Issues
 

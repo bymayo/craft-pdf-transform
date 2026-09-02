@@ -17,9 +17,10 @@
     instructions: 'The volume you want to output renders to',
     id: 'imageVolume',
     name: 'imageVolume',
-    value: settings['imageVolume'],
+    value: imageVolumeValue,
     required: true,
-    options: volumes
+    errors: settings.getErrors('imageVolume'),
+    options: [{ label: 'Select a volume…', value: '' }]|merge(volumes)
     })
 }}
 
@@ -143,11 +144,55 @@
     instructions: 'Select which volumes trigger auto-transform when a PDF is uploaded. This does not affect the <code>craft.pdfTransform.render()</code> Twig method.',
     id: 'sourceVolumes',
     name: 'sourceVolumes',
-    values: settings['sourceVolumes'],
+    values: sourceVolumeValues,
     options: volumes,
     showAllOption: true
     })
 }}
+
+<hr>
+
+{% css %}
+    /* Strip .pane's default inner padding so the table fits flush. */
+    .pdf-transform-status-table.pane {
+        padding: 0;
+        overflow: hidden;
+    }
+    /* Craft sets row borders to transparent by default — colour them in. */
+    .pdf-transform-status-table tbody tr:not(:last-child) > th,
+    .pdf-transform-status-table tbody tr:not(:last-child) > td {
+        border-bottom: 1px solid var(--hairline-color);
+    }
+    /* Craft has no condensed table variant; tighten the cell padding. */
+    .pdf-transform-status-table table.data td,
+    .pdf-transform-status-table table.data th {
+        padding-block: 5px;
+        padding-inline: 10px;
+        font-size: 13px;
+    }
+{% endcss %}
+
+<h2>Status</h2>
+
+<p>Checked in the same PHP process that renders your site.</p>
+
+<div class="pane hairline pdf-transform-status-table" style="max-width: 640px;">
+    <table class="data fullwidth">
+        <tbody>
+            {% for check in environmentStatus %}
+                <tr>
+                    <th>{{ check.label }}</th>
+                    <td>
+                        <span class="status {{ check.ok ? 'green' : 'red' }}"></span>
+                        {{ check.detail }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<p class="light">Failed transforms are logged to <code>storage/logs/pdfTransform.log</code>.</p>
 
 {% js %}
 (function() {

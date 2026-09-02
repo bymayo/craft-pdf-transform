@@ -27,6 +27,10 @@ class Settings extends Model
      * @var string
      */
     public $page = 1;
+
+    /**
+     * @var string|int|null Volume UID (or a legacy volume ID, for settings saved before 5.2.0)
+     */
     public $imageVolume = null;
     public $imageFormat = 'jpg';
     public $imageResolution = 72;
@@ -35,6 +39,9 @@ class Settings extends Model
     public $imageColorspace = 'srgb';
     public $imageDestination = 'root';
     public $imageSubfolder = '';
+    /**
+     * @var array Volume UIDs (or legacy volume IDs), or ['*'] for all volumes
+     */
     public $sourceVolumes = ['*'];
 
     // Public Methods
@@ -46,7 +53,8 @@ class Settings extends Model
     public function rules(): array
     {
         return [
-            [['page', 'imageVolume', 'imageResolution', 'imageQuality'], 'integer'],
+            [['page', 'imageResolution', 'imageQuality'], 'integer'],
+            ['imageVolume', 'required'],
             ['imageFormat', 'in', 'range' => ['jpg', 'png']],
             ['cleanFilenames', 'boolean'],
             ['imageColorspace', 'in', 'range' => ['none', 'srgb', 'rgb', 'cmyk', 'gray']],

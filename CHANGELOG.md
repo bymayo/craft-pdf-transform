@@ -1,5 +1,17 @@
 # PDF Transform Changelog
 
+## 5.2.1 - 2026-09-01
+
+### Added
+- New "Status" panel on the settings page, which converts a test PDF and reports what's missing ([#38](https://github.com/bymayo/craft-pdf-transform/issues/38))
+
+### Fixed
+- Failed transforms are now logged at error level, so they reach `web.log` instead of being discarded ([#38](https://github.com/bymayo/craft-pdf-transform/issues/38))
+- Volume settings are now stored as UIDs, so they survive deploys between environments ([#38](https://github.com/bymayo/craft-pdf-transform/issues/38))
+- Output Image Volume is now required, and no longer shows the first volume as though it were saved ([#38](https://github.com/bymayo/craft-pdf-transform/issues/38))
+- A failed `saveElement()` call no longer returns `null` silently
+- `render()` and `pdfToImage()` now catch and log every exception
+
 ## 5.2.0 - 2026-02-22
 
 ### Added

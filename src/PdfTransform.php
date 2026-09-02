@@ -53,9 +53,9 @@ class PdfTransform extends Plugin
     // Public Methods
     // =========================================================================
 
-    public static function log($message)
+    public static function log($message, $level = \yii\log\Logger::LEVEL_ERROR)
    {
-      Craft::getLogger()->log($message, \yii\log\Logger::LEVEL_INFO, 'pdf-transform');
+      Craft::getLogger()->log($message, $level, 'pdf-transform');
    }
 
     /**
@@ -69,7 +69,8 @@ class PdfTransform extends Plugin
         $fileTarget = new FileTarget(
             [
               'logFile' => Craft::getAlias('@storage/logs/pdfTransform.log'),
-             'categories' => ['pdf-transform']
+              'categories' => ['pdf-transform'],
+              'logVars' => []
             ]
         );
  
@@ -112,23 +113,21 @@ class PdfTransform extends Plugin
 
                if ($event->isNew && $asset->extension === 'pdf') {
 
-                  $sourceVolumes = $this->getSettings()->sourceVolumes;
-
-                  if (!in_array('*', $sourceVolumes)) {
-                    $assetVolumeId = (string) $asset->getVolumeId();
-                    if (!in_array($assetVolumeId, $sourceVolumes)) {
-                      PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': volume not in allowed source volumes.');
-                      return;
-                    }
-                  }
+                  $service = PdfTransform::$plugin->pdfTransformService;
 
                   try {
+                    if (!$service->isSourceVolume($asset)) {
+                      PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': volume not in allowed source volumes.', \yii\log\Logger::LEVEL_INFO);
+                      return;
+                    }
+
                     $asset->getStream();
                   } catch (\Throwable $e) {
-                    PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': file not yet available.');
+                    PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': ' . get_class($e) . ': ' . $e->getMessage());
                     return;
                   }
-                  PdfTransform::$plugin->pdfTransformService->pdfToImage($asset);
+
+                  $service->pdfToImage($asset);
                }
 
             }
@@ -153,11 +152,17 @@ class PdfTransform extends Plugin
     protected function settingsHtml(): ?string
     {
 
+        $settings = $this->getSettings();
+        $service = PdfTransform::$plugin->pdfTransformService;
+
         return Craft::$app->view->renderTemplate(
             'pdf-transform/settings',
             [
-                'settings' => $this->getSettings(),
-                'volumes' => PdfTransform::$plugin->pdfTransformService->getVolumeOptions()
+                'settings' => $settings,
+                'volumes' => $service->getVolumeOptions(),
+                'imageVolumeValue' => $service->normalizeVolumeValue($settings->imageVolume),
+                'sourceVolumeValues' => $service->normalizeVolumeValues($settings->sourceVolumes),
+                'environmentStatus' => $service->getEnvironmentStatus()
             ]
         );
 
