@@ -8,7 +8,7 @@ A use case for this is to show the preview of a PDF before a user downloads that
 ## Features
 
 - Transform PDF's to images via Twig (The file needs to be an existing Asset element)
-- PDF's are transformed to an image when PDF's are uploaded via Assets or Asset fields.
+- PDF's are transformed to an image in the queue when PDF's are uploaded via Assets or Asset fields.
 - Transformed PDF images are indexed and available in Assets like all other asset elements.
 - Works with local asset volumes, Amazon S3 and Servd.
 - Control where generated images are placed (volume root, subfolder, or mirror source path).
@@ -26,6 +26,7 @@ You can also install the plugin via the Plugin Store in the Craft Admin CP by se
 
 - Craft CMS 5.x
 - Imagick / Ghostscript
+- The Imagick PHP extension must be enabled for **both** the CLI PHP that runs Composer and the web PHP (PHP-FPM). `spatie/pdf-to-image` requires `ext-imagick`, so `composer require` (and Plugin Store installs) will fail if Composer's PHP doesn't have it
 - MySQL (No PostgreSQL support)
 
 ## Configuration
@@ -136,6 +137,18 @@ The transformed PDF (Now an image stored in Assets) can then be output using `{{
 If the transformed image doesn't exist then the PDF will be transformed via the template. This may cause the template/page to become slow whilst the PDF is transformed.
 
 Be aware that this also may output a large image, so we'd recommend running this through an image transform. See <a href="#dimensions">Dimensions</a>.
+
+## Regenerating Images
+
+Changing Page Number, Image Resolution, Image Quality or Colour Space in the Control Panel (or via a project config deploy) queues a job that regenerates every existing image with the new settings. Images are replaced in place, so their asset IDs and URLs don't change.
+
+Settings in `config/pdf-transform.php` don't trigger this, so after changing those run:
+
+```
+php craft pdf-transform/images/regenerate
+```
+
+Changing Image Format, Output Image Volume, Output Destination or Clean Filenames changes the image's filename, so a new image is created the next time `render()` is called.
 
 ## Troubleshooting
 

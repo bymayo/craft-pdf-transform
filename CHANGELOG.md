@@ -1,5 +1,23 @@
 # PDF Transform Changelog
 
+## 5.3.0 - 2026-10-30
+
+### Added
+- Existing images are now regenerated in the queue when Page Number, Image Resolution, Image Quality or Colour Space changes
+- New `pdf-transform/images/regenerate` console command
+
+### Changed
+- PDFs are now auto-transformed in the queue, so large PDFs no longer slow down or time out uploads
+- `render()` now looks up existing images in the database before checking the filesystem, saving a remote request per PDF on S3/Servd
+
+### Fixed
+- Ticking “All” under Auto-Transform Source Volumes no longer stops settings saving
+- The “All” option is now shown ticked when all volumes are selected
+- Volumes can now all be unticked under Auto-Transform Source Volumes
+- Settings validation errors now show against the field
+- `render()` no longer creates a duplicate image on every request when an image file exists but its asset record doesn't
+- An unclosed file stream on PDF upload
+
 ## 5.2.1 - 2026-09-01
 
 ### Added

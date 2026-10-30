@@ -8,7 +8,8 @@
     id: 'page',
     name: 'page',
     value: settings['page'],
-    required: true
+    required: true,
+    errors: settings.getErrors('page')
     })
 }}
 
@@ -64,7 +65,8 @@
     id: 'imageResolution',
     name: 'imageResolution',
     value: settings['imageResolution'],
-    required: true
+    required: true,
+    errors: settings.getErrors('imageResolution')
     })
 }}
 
@@ -73,7 +75,8 @@
     id: 'imageQuality',
     name: 'imageQuality',
     value: settings['imageQuality'],
-    required: true
+    required: true,
+    errors: settings.getErrors('imageQuality')
     })
 }}
 
@@ -139,6 +142,9 @@
 
 <hr>
 
+{# Posted when nothing is ticked, so all volumes can be unticked #}
+{{ hiddenInput('sourceVolumes', '') }}
+
 {{ forms.checkboxSelectField({
     label: 'Auto-Transform Source Volumes',
     instructions: 'Select which volumes trigger auto-transform when a PDF is uploaded. This does not affect the <code>craft.pdfTransform.render()</code> Twig method.',
@@ -146,6 +152,7 @@
     name: 'sourceVolumes',
     values: sourceVolumeValues,
     options: volumes,
+    errors: settings.getErrors('sourceVolumes'),
     showAllOption: true
     })
 }}

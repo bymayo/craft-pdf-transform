@@ -11,12 +11,16 @@ namespace bymayo\pdftransform;
 use bymayo\pdftransform\services\PdfTransformService as PdfTransformServiceService;
 use bymayo\pdftransform\variables\PdfTransformVariable;
 use bymayo\pdftransform\models\Settings;
+use bymayo\pdftransform\jobs\RegenerateImages;
+use bymayo\pdftransform\jobs\TransformPdf;
 
 use Craft;
 use craft\base\Plugin;
 use craft\services\Plugins;
 use craft\elements\Asset;
+use craft\events\ConfigEvent;
 use craft\events\PluginEvent;
+use craft\helpers\Queue;
 use craft\web\twig\variables\CraftVariable;
 
 use craft\events\ModelEvent;
@@ -111,28 +115,44 @@ class PdfTransform extends Plugin
 
                 $asset = $event->sender;
 
-               if ($event->isNew && $asset->extension === 'pdf') {
+               if ($event->isNew && !$asset->propagating && $asset->extension === 'pdf') {
 
-                  $service = PdfTransform::$plugin->pdfTransformService;
-
-                  try {
-                    if (!$service->isSourceVolume($asset)) {
-                      PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': volume not in allowed source volumes.', \yii\log\Logger::LEVEL_INFO);
-                      return;
-                    }
-
-                    $asset->getStream();
-                  } catch (\Throwable $e) {
-                    PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': ' . get_class($e) . ': ' . $e->getMessage());
+                  if (!PdfTransform::$plugin->pdfTransformService->isSourceVolume($asset)) {
+                    PdfTransform::log('Skipping auto-transform for asset #' . $asset->id . ': volume not in allowed source volumes.', \yii\log\Logger::LEVEL_INFO);
                     return;
                   }
 
-                  $service->pdfToImage($asset);
+                  // Convert in the queue, so large PDFs don't slow down (or time out) the upload
+                  Queue::push(new TransformPdf([
+                    'assetId' => $asset->id,
+                  ]));
                }
 
             }
         );
 
+        Craft::$app->getProjectConfig()
+            ->onAdd('plugins.' . $this->handle . '.settings', [$this, 'handleChangedSettings'])
+            ->onUpdate('plugins.' . $this->handle . '.settings', [$this, 'handleChangedSettings']);
+
+    }
+
+    /**
+     * Regenerates existing images when a setting that changes how they look is
+     * updated. Settings that change the filename (format, volume etc.) don't need
+     * this, as `render()` creates a new image for the new filename.
+     */
+    public function handleChangedSettings(ConfigEvent $event): void
+    {
+        $keys = array_flip(['page', 'imageResolution', 'imageQuality', 'imageColorspace']);
+        $defaults = array_intersect_key((new Settings())->toArray(), $keys);
+
+        $old = array_map('strval', array_merge($defaults, array_intersect_key((array) $event->oldValue, $keys)));
+        $new = array_map('strval', array_merge($defaults, array_intersect_key((array) $event->newValue, $keys)));
+
+        if ($old != $new) {
+            Queue::push(new RegenerateImages());
+        }
     }
 
     // Protected Methods
@@ -154,6 +174,7 @@ class PdfTransform extends Plugin
 
         $settings = $this->getSettings();
         $service = PdfTransform::$plugin->pdfTransformService;
+        $sourceVolumeValues = $service->normalizeVolumeValues($settings->sourceVolumes);
 
         return Craft::$app->view->renderTemplate(
             'pdf-transform/settings',
@@ -161,7 +182,8 @@ class PdfTransform extends Plugin
                 'settings' => $settings,
                 'volumes' => $service->getVolumeOptions(),
                 'imageVolumeValue' => $service->normalizeVolumeValue($settings->imageVolume),
-                'sourceVolumeValues' => $service->normalizeVolumeValues($settings->sourceVolumes),
+                // Craft only ticks the "All" option when the value is the string '*'
+                'sourceVolumeValues' => in_array('*', $sourceVolumeValues, true) ? '*' : $sourceVolumeValues,
                 'environmentStatus' => $service->getEnvironmentStatus()
             ]
         );

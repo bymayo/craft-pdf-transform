@@ -60,7 +60,28 @@ class Settings extends Model
             ['imageColorspace', 'in', 'range' => ['none', 'srgb', 'rgb', 'cmyk', 'gray']],
             ['imageDestination', 'in', 'range' => ['root', 'subfolder', 'mirror']],
             ['imageSubfolder', 'string'],
+            // The "All" checkbox posts '*' as a string, and an empty hidden input posts ''
+            ['sourceVolumes', 'filter', 'filter' => [$this, 'normalizeSourceVolumes']],
             ['sourceVolumes', 'each', 'rule' => ['string']],
         ];
+    }
+
+    /**
+     * @param mixed $value
+     * @return array
+     */
+    public function normalizeSourceVolumes($value): array
+    {
+        if ($value === '*') {
+            return ['*'];
+        }
+
+        if (!is_array($value)) {
+            return [];
+        }
+
+        $value = array_values(array_filter($value, fn($v) => $v !== '' && $v !== null));
+
+        return in_array('*', $value, true) ? ['*'] : $value;
     }
 }

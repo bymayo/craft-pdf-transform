@@ -16,6 +16,8 @@ use craft\models\Volume;
 use craft\models\VolumeFolder;
 use Spatie\PdfToImage\Pdf;
 use craft\elements\Asset;
+use craft\helpers\Db;
+use craft\models\AssetIndexData;
 
 /**
  * @author    ByMayo
@@ -319,6 +321,75 @@ class PdfTransformService extends Component
 
    }
 
+   /**
+    * Re-converts the PDF and replaces its existing image file in place, so the
+    * asset (and its URL) stays the same. Returns false if it has no image yet.
+    */
+   public function regenerate(Asset $asset): bool
+   {
+
+     $volume = $this->getImageVolume();
+
+     if (!$volume) {
+       return false;
+     }
+
+     // Look across the whole volume rather than the destination folder, so this
+     // doesn't create folders for PDFs that have never been rendered
+     $image = $this->findImage($volume->id, $this->getFileName($asset));
+
+     if (!$image) {
+       return false;
+     }
+
+     try {
+       $imagePath = $this->createImageFile($asset);
+
+       if ($imagePath === null) {
+         return false;
+       }
+
+       Craft::$app->getAssets()->replaceAssetFile($image, $imagePath, $image->filename);
+     } catch (\Throwable $e) {
+       PdfTransform::log('Regenerating the image for asset #' . $asset->id . ' failed: ' . get_class($e) . ': ' . $e->getMessage());
+       return false;
+     }
+
+     return true;
+
+   }
+
+   /**
+    * Regenerates the image for every PDF that has one. Returns how many were
+    * regenerated.
+    *
+    * @param callable|null $onProgress Called with ($done, $total) after each PDF
+    */
+   public function regenerateAll(?callable $onProgress = null): int
+   {
+
+     $query = Asset::find()
+       ->kind(Asset::KIND_PDF)
+       ->status(null);
+
+     $total = $query->count();
+     $done = 0;
+     $regenerated = 0;
+
+     foreach (Db::each($query) as $asset) {
+       if ($this->regenerate($asset)) {
+         $regenerated++;
+       }
+
+       if ($onProgress) {
+         $onProgress(++$done, $total);
+       }
+     }
+
+     return $regenerated;
+
+   }
+
     // Private Methods
     // =========================================================================
 
@@ -340,21 +411,26 @@ class PdfTransformService extends Component
        return null;
      }
 
+     // Check the database first, so cached images don't cost a filesystem
+     // request (a remote one, on S3/Servd) on every page load
+     $transformedAsset = $this->findImage($volume->id, $fileName, $folder->id);
+
+     if ($transformedAsset) {
+       return $transformedAsset;
+     }
+
      $filePath = ($folder->path ?? '') . $fileName;
 
      if ($volume->fileExists($filePath)) {
-
-       $transformedAsset = Asset::find()
-         ->volumeId($volume->id)
-         ->folderId($folder->id)
-         ->filename($fileName)
-         ->one();
-
-       if ($transformedAsset) {
-         return $transformedAsset;
-       }
-
-       // File exists on disk but asset record is missing — re-create it
+       // The file exists but its asset record doesn't (e.g. after a database
+       // restore). Index it, rather than converting it again under a new name
+       // on every request.
+       return Craft::$app->getAssetIndexer()->indexFileByEntry(new AssetIndexData([
+         'volumeId' => $volume->id,
+         'uri' => $filePath,
+         'size' => $volume->getFileSize($filePath),
+         'timestamp' => $volume->getDateModified($filePath),
+       ]));
      }
 
      return $this->pdfToImage(
@@ -366,13 +442,6 @@ class PdfTransformService extends Component
    private function convert(Asset $asset): ?Asset
    {
 
-     $environmentError = $this->getEnvironmentError();
-
-     if ($environmentError !== null) {
-       PdfTransform::log('Cannot convert asset #' . $asset->id . '. ' . $environmentError);
-       return null;
-     }
-
      $filename = $this->getFileName($asset);
      $volume = $this->getImageVolume();
 
@@ -381,54 +450,18 @@ class PdfTransformService extends Component
        return null;
      }
 
-     $pathService = Craft::$app->getPath();
-     $tempPath = $pathService->getTempPath(true) . '/' . uniqid('pdf_', true) . '.pdf';
-     $stream = $asset->getStream();
-     file_put_contents($tempPath, $stream);
-     if (is_resource($stream)) {
-       fclose($stream);
-     }
-
-     $tempPathTransform = $pathService->getTempPath(true) . '/' . $filename;
-
      $folder = $this->getDestinationFolder($asset);
 
      if (!$folder) {
-       @unlink($tempPath);
        PdfTransform::log('Destination folder could not be resolved for volume “' . $volume->name . '”.');
        return null;
      }
 
-     try {
+     $tempPathTransform = $this->createImageFile($asset);
 
-       $pdf = new Pdf($tempPath);
-
-       $colorspaceMap = [
-         'srgb' => \Imagick::COLORSPACE_SRGB,
-         'rgb' => \Imagick::COLORSPACE_RGB,
-         'cmyk' => \Imagick::COLORSPACE_CMYK,
-         'gray' => \Imagick::COLORSPACE_GRAY,
-       ];
-
-       $colorspace = $this->settings->imageColorspace;
-
-       if ($colorspace !== 'none' && isset($colorspaceMap[$colorspace])) {
-         $pdf->setColorspace($colorspaceMap[$colorspace]);
-       }
-
-       $pdf
-         ->setPage($this->settings->page)
-         ->setResolution($this->settings->imageResolution)
-         ->setCompressionQuality($this->settings->imageQuality)
-         ->saveImage($tempPathTransform);
-
-     } catch (\Throwable $e) {
-       @unlink($tempPath);
-       PdfTransform::log('PDF conversion failed for asset #' . $asset->id . ': ' . get_class($e) . ': ' . $e->getMessage());
+     if ($tempPathTransform === null) {
        return null;
      }
-
-     @unlink($tempPath);
 
      $assetTransformed = new Asset();
      $assetTransformed->tempFilePath = $tempPathTransform;
@@ -453,6 +486,73 @@ class PdfTransformService extends Component
 
      return null;
 
+   }
+
+   /**
+    * Converts the PDF to an image in Craft's temp folder, and returns its path.
+    */
+   private function createImageFile(Asset $asset): ?string
+   {
+
+     $environmentError = $this->getEnvironmentError();
+
+     if ($environmentError !== null) {
+       PdfTransform::log('Cannot convert asset #' . $asset->id . '. ' . $environmentError);
+       return null;
+     }
+
+     $pathService = Craft::$app->getPath();
+     $tempPath = $pathService->getTempPath(true) . '/' . uniqid('pdf_', true) . '.pdf';
+     $stream = $asset->getStream();
+     file_put_contents($tempPath, $stream);
+     if (is_resource($stream)) {
+       fclose($stream);
+     }
+
+     $imagePath = $pathService->getTempPath(true) . '/' . uniqid('pdf_image_', true) . '.' . $this->settings->imageFormat;
+
+     try {
+
+       $pdf = new Pdf($tempPath);
+
+       $colorspaceMap = [
+         'srgb' => \Imagick::COLORSPACE_SRGB,
+         'rgb' => \Imagick::COLORSPACE_RGB,
+         'cmyk' => \Imagick::COLORSPACE_CMYK,
+         'gray' => \Imagick::COLORSPACE_GRAY,
+       ];
+
+       $colorspace = $this->settings->imageColorspace;
+
+       if ($colorspace !== 'none' && isset($colorspaceMap[$colorspace])) {
+         $pdf->setColorspace($colorspaceMap[$colorspace]);
+       }
+
+       $pdf
+         ->setPage($this->settings->page)
+         ->setResolution($this->settings->imageResolution)
+         ->setCompressionQuality($this->settings->imageQuality)
+         ->saveImage($imagePath);
+
+     } catch (\Throwable $e) {
+       PdfTransform::log('PDF conversion failed for asset #' . $asset->id . ': ' . get_class($e) . ': ' . $e->getMessage());
+       return null;
+     } finally {
+       @unlink($tempPath);
+     }
+
+     return $imagePath;
+
+   }
+
+   private function findImage(int $volumeId, string $filename, ?int $folderId = null): ?Asset
+   {
+     return Asset::find()
+       ->volumeId($volumeId)
+       ->folderId($folderId)
+       ->filename($filename)
+       ->status(null)
+       ->one();
    }
 
    /**
